@@ -73,7 +73,7 @@ Dialog {
             ComboBox {
                 id: cbBonus
                 width: page.width
-                label: qsTr("bonus time system")
+                label: qsTr("time system")
 
                 currentIndex: bonusType
 
@@ -85,18 +85,37 @@ Dialog {
                     } else if (bonusType == 2) {
                         txtPlaceHolder = qsTr("delay per move") + " [s]"
                     } else {
+                        if (bonusType == 3) {
+                            if (bonusT1 < 1)
+                                bonusT1 = 15
+                            if (bonusPeriods1 < 1)
+                                bonusPeriods1 = 1
+                            if (bonusT2 < 1)
+                                bonusT2 = 15
+                            if (bonusPeriods2 < 1)
+                                bonusPeriods2 = 1
+                        } else {
+                            if (bonusT1 < 1)
+                                bonusT1 = 5*60
+                            if (bonusPeriods1 < 1)
+                                bonusPeriods1 = 20
+                            if (bonusT2 < 1)
+                                bonusT2 = 5*60
+                            if (bonusPeriods2 < 1)
+                                bonusPeriods2 = 20
+                        }
+
                         txtPlaceHolder = qsTr("time period") + " [s]"
                     }
-
 
                 }
 
                 menu: ContextMenu {
-                    MenuItem { text: qsTr("no bonus") }
+                    MenuItem { text: qsTr("simple") }
                     MenuItem { text: qsTr("increment (Fisher)") }
                     MenuItem { text: qsTr("delay (Bronstein)") }
-                    MenuItem { text: qsTr("n*secs (Byoyomi)") }
-                    MenuItem { text: qsTr("N moves in X secs (Canadian Byoyomi)") }
+                    MenuItem { text: qsTr("X s N times (Byo-yomi)") }
+                    MenuItem { text: qsTr("N moves in X secs (Canadian Byo-yomi)") }
                 }
             }
 
@@ -148,11 +167,11 @@ Dialog {
                 id: txtBonusPeriods1
                 width: sliderWidth
                 value: bonusPeriods1
-                minimumValue: 0
-                maximumValue: 10
+                minimumValue: 1
+                maximumValue: 60
                 stepSize: 1
                 visible: bonusType > 2.5
-                valueText: bonusType < 3.5 ? ( value.toFixed(0) + " " + qsTr("time periods")) : qsTr("%1 moves in %2 s").arg(value.toFixed(0)).arg(txtBonus2.text)
+                valueText: bonusType < 3.5 ? ( value.toFixed(0) + " " + qsTr("time periods")) : qsTr("%1 moves in %2 s").arg(value.toFixed(0)).arg(txtBonus1.text)
             }
 
             TextSwitch {
@@ -209,8 +228,8 @@ Dialog {
                 id: txtBonusPeriods2
                 width: sliderWidth
                 value: bonusPeriods2
-                minimumValue: 0
-                maximumValue: 10
+                minimumValue: 1
+                maximumValue: 60
                 stepSize: 1
                 visible: equalTimes.checked ? false : (bonusType > 2.5 ? true : false)
                 valueText: bonusType < 3.5 ? ( value.toFixed(0) + " " + qsTr("time periods")) : qsTr("%1 moves in %2 s").arg(value.toFixed(0)).arg(txtBonus2.text)
@@ -248,6 +267,6 @@ Dialog {
             bonusPeriods2 = txtBonusPeriods2.value
         }
 
-        console.log("TimeSettings-N "+ bonusT1 + " " + bonusPeriods1)
+        //console.log("TimeSettings-N "+ bonusT1 + " " + bonusPeriods1)
     }
 }

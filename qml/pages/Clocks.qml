@@ -37,6 +37,8 @@ import "../utils"
 Page {
     id: page
 
+    property int moves1: 0
+    property int moves2: 0
     property int time01: 30*60*1000
     property int time02: 30*60*1000
     property int time1: time01
@@ -54,23 +56,25 @@ Page {
     property int bonusType: 0 // 0 - no bonus, 1 - +X s per move (Fischer), 2 - delay before counting (Bronstein),
                                 //3 - after game time N x X extras (Byoyomi), 4 - N moves in X s (Canadian Byoyomi)
     property int timeStep: 100 //ms
-    property int gameOverWaitTime: 3*1000
-    property bool clock1running: true
+    property int gameOverWaitTime: 5*1000
+    property bool player1turn: true
     property bool tapToReset: false
 
-    function byoyomi(player) {
+    function byoyomi() {
         var result
 
-        if (player === 1) {
+        if (player1turn) {
             if (bonus1 < 0) {
                 bonusTimes1 -= 1
-                bonus1 = bonus10
+                if (bonusTimes1 > 0)
+                    bonus1 = bonus10
             }
             result = bonusTimes1
         } else {
             if (bonus2 < 0) {
                 bonusTimes2 -= 1
-                bonus2 = bonus20
+                if (bonusTimes2 > 0)
+                    bonus2 = bonus20
             }
             result = bonusTimes2
         }
@@ -79,10 +83,10 @@ Page {
     }
 
     //called when changing turn
-    function canadianByoyomi(player) {
+    function canadianByoyomi() {
         var tulos
-        if (player === 2) {
-            if (bonus2 > 0) { // don't update if game is over
+        if (!player1turn) {
+            if ((bonus2 > 0) && (time2 < 0)) { // don't update if game is over
                 bonusTimes2 -= 1 // one out of bonusTimes20 moves done
                 if (bonusTimes2 <= 0) { // if all moves done in bonus2-time, start over again
                     bonus2 = bonus20
@@ -91,7 +95,7 @@ Page {
             }
             tulos = bonus2
         } else {
-            if (bonus1 > 0) {
+            if ((bonus1 > 0) && (time1 < 0)) {
                 bonusTimes1 -= 1
                 if (bonusTimes1 <= 0) {
                     bonus1 = bonus10
@@ -104,13 +108,49 @@ Page {
         return tulos
     }
 
+    function changePlayer() {
+
+        if (bonusType == 1) {
+            if (player1turn)
+                time1 += bonus1
+            else
+                time2 += bonus2
+        } else if (bonusType == 2) {
+            if (player1turn)
+                bonus1 = bonus10
+            else
+                bonus2 = bonus20
+        } else if (bonusType == 3) {
+            if (player1turn)
+                bonus1 = bonus10
+            else
+                bonus2 = bonus20
+        } else if (bonusType == 4)
+            canadianByoyomi()
+
+        writeExtraTime()
+        if (player1turn) {
+            moves1 += 1
+            writeClock1()
+        } else {
+            moves2 += 1
+            writeClock2()
+        }
+
+        player1turn = !player1turn
+        clockFonts()
+
+        return
+    }
+
+    /*
     function changeToClock1() {
         if ((clockCounter.running == false) && (time1 > 0) && (time2 > 0)) {
             clockCounter.start()
             clock1.text = clockText(time1)
             clock2.text = clockText(time2)
         } else {
-            if (!clock1running) {
+            if (!player1turn) {
                 if (bonusType == 1)
                     time2 += bonus2
                 else if (bonusType == 2)
@@ -118,14 +158,14 @@ Page {
                 else if (bonusType == 3)
                     bonus2 = bonus20
                 else if (bonusType == 4)
-                    canadianByoyomi(2)
+                    canadianByoyomi()
 
                 writeBonus2()
                 writeClock2()
             }
         }
 
-        clock1running = true
+        player1turn = true
         clockFonts()
 
         return
@@ -137,7 +177,7 @@ Page {
             clock1.text = clockText(time1)
             clock2.text = clockText(time2)
         } else {
-            if (clock1running) {
+            if (player1turn) {
                 if (bonusType == 1)
                     time1 += bonus1
                 else if (bonusType == 2)
@@ -145,21 +185,22 @@ Page {
                 else if (bonusType == 3)
                     bonus1 = bonus10
                 else if (bonusType == 4)
-                    canadianByoyomi(1)
+                    canadianByoyomi()
 
                 writeBonus1()
                 writeClock1()
             }
         }
 
-        clock1running = false
+        player1turn = false
         clockFonts()
 
         return
     }
 
+    // */
     function clockFonts() {
-        if (clock1running) {
+        if (player1turn) {
             clock1.font.bold = true
             clock1.color = Theme.secondaryHighlightColor
             clock1.style = Text.Raised
@@ -176,13 +217,13 @@ Page {
                     bonusClock1.color = Theme.secondaryHighlightColor
                     bonusClock1.style = Text.Raised
 
-                    clock1.height = 0.5*(Screen.height - column.spacing*4 - midRow.height - 2) - bonusClock1.height
+                    clock1.height = 0.5*(Screen.height - column.spacing*4 - midRow.height - 2) - stats1.height - bonusClock1.height
 
-                    if (time2 < 0) {
-                        bonusClock2.font.bold = false
-                        bonusClock2.color = Theme.highlightColor
-                        bonusClock2.style = Text.Sunken
-                    }
+                }
+                if (time2 < 0) {
+                    bonusClock2.font.bold = false
+                    bonusClock2.color = Theme.highlightColor
+                    bonusClock2.style = Text.Sunken
                 }
             }
         } else {
@@ -202,14 +243,15 @@ Page {
                     bonusClock2.color = Theme.secondaryHighlightColor
                     bonusClock2.style = Text.Raised
 
-                    clock2.height = 0.5*(Screen.height - column.spacing*4 - midRow.height - 2) - bonusClock2.height
+                    clock2.height = 0.5*(Screen.height - column.spacing*4 - midRow.height - 2) - stats2.height - bonusClock2.height
 
-                    if (time1 < 0) {
-                        bonusClock1.font.bold = false
-                        bonusClock1.color = Theme.highlightColor
-                        bonusClock1.style = Text.Sunken
-                    }
                 }
+                if (time1 < 0) {
+                    bonusClock1.font.bold = false
+                    bonusClock1.color = Theme.highlightColor
+                    bonusClock1.style = Text.Sunken
+                }
+
             }
         }
 
@@ -251,25 +293,37 @@ Page {
     }
 
     function gameLost(player) {
-        var clo = player == 1 ? clock1 : clock2
-        var bon = player == 1 ? bonusClock1 : bonusClock2
+        var clo = player1turn ? clock1 : clock2
+        var loser = player1turn ? bonusClock1 : bonusClock2
+        //var winner = player1turn ? bonusClock2 : bonusClock1
 
         clockCounter.running = false
 
-        if (bonusType > 2.5) {
-            bon.text = "0"
-            clo.text = qsTr("lost")
-        } else {
-            clo.text = "0.0"
-            clo.style = Text.Outline
-            clo.color = Theme.primaryColor
+        clo.text = "0.0"
+        clo.style = Text.Outline
+        clo.color = Theme.primaryColor
 
-            bon.visible = true
-            bon.text = qsTr("lost")
+        loser.color = Theme.primaryColor
+
+        stats1.text = qsTr("total time") + " " + clockText(gameTime1) + ", " + qsTr("moves") + " " + moves1
+        stats2.text = qsTr("total time") + " " + clockText(gameTime2) + ", " + qsTr("moves") + " " + moves2
+
+        return
+    }
+
+    function startGame(player) {
+        if ((clockCounter.running == false) && (time1 > 0) && (time2 > 0)) {
+            clock1.text = clockText(time1)
+            clock2.text = clockText(time2)
+            if (player == 1)
+                player1turn = true
+            else
+                player1turn = false
+
+            clockFonts()
+            clockCounter.start()
+
         }
-
-        bonusClock1.text += " - " + qsTr("total time") + " " + clockText(gameTime1)
-        bonusClock2.text += " - " + qsTr("total time") + " " + clockText(gameTime2)
 
         return
     }
@@ -278,34 +332,42 @@ Page {
         tapToReset = false
 
         gameTime1 = 0
+        moves1 = 0
         time1 = time01
         gameTime2 = 0
+        moves2 = 0
         time2 = time02
 
         bonus1 = bonus10
         bonusTimes1 = bonusTimes10
         bonusClock1.font.pixelSize = Theme.fontSizeMedium
         bonusClock1.visible = true
-        bonusClock1.height = 0.1*Screen.height
+        bonusClock1.font.bold = false
+        bonusClock1.color = Theme.primaryColor
+        bonusClock1.style = Text.Normal
+
 
         bonus2 = bonus20
         bonusTimes2 = bonusTimes20
         bonusClock2.font.pixelSize = Theme.fontSizeMedium
         bonusClock2.visible = true
-        bonusClock2.height = 0.1*Screen.height
+        bonusClock2.font.bold = false
+        bonusClock2.color = Theme.primaryColor
+        bonusClock2.style = Text.Normal
 
         if (bonusType == 0) {
-            bonusClock1.visible = false
-            bonusClock1.text = ""
-            //bonusClock1.height = 0
+            //bonusClock1.visible = false
+            bonusClock1.height = 0.1*Screen.height
+            bonusClock1.text = " "
 
-            bonusClock2.visible = false
-            bonusClock2.text = ""
             //bonusClock2.visible = false
-            //bonusClock2.height = 0
+            bonusClock2.height = 0.1*Screen.height
+            bonusClock2.text = " "
 
         } else if (bonusType == 1) {
+            bonusClock1.height = 0.1*Screen.height
             bonusClock1.text = qsTr("adding") + " " + bonus1/1000 + " s " + qsTr("per move")
+            bonusClock2.height = 0.1*Screen.height
             bonusClock2.text = qsTr("adding") + " " + bonus2/1000 + " s " + qsTr("per move")
         } else if (bonusType == 2) {
             bonusClock1.text = qsTr("delay") + " " + bonus1/1000 + " s "
@@ -317,26 +379,36 @@ Page {
             bonusClock2.font.pixelSize = Theme.fontSizeLarge
         } else if (bonusType == 3) {
             bonusClock1.text = qsTr("after base time") + " " + bonusTimes10 + " x " + bonus10/1000 + " s"
+            bonusClock1.height = 0.2*Screen.height
             bonusClock1.font.pixelSize = Theme.fontSizeLarge
-            bonusClock2.text = qsTr("after base time") + " " + bonusTimes10 + " x " + bonus10/1000 + " s"
+            bonusClock2.text = qsTr("after base time") + " " + bonusTimes20 + " x " + bonus20/1000 + " s"
+            bonusClock2.height = 0.2*Screen.height
+            bonusClock2.font.pixelSize = Theme.fontSizeLarge
         } else if (bonusType == 4) {
             bonusClock1.text = qsTr("after base time %1 moves in %2 s").arg(bonusTimes10).arg(bonus10/1000)
-            bonusClock2.text = qsTr("after base time %1 moves in %2 s").arg(bonusTimes10).arg(bonus10/1000)
+            bonusClock1.height = 0.2*Screen.height
+            bonusClock1.font.pixelSize = Theme.fontSizeLarge
+            bonusClock2.text = qsTr("after base time %1 moves in %2 s").arg(bonusTimes20).arg(bonus20/1000)
+            bonusClock2.height = 0.2*Screen.height
+            bonusClock2.font.pixelSize = Theme.fontSizeLarge
         }
 
         clock1.color = Theme.highlightColor
         clock1.font.bold = false
-        clock1.font.overline = false        
+        clock1.font.overline = false
         clock1.style = Text.Raised
-        clock1.height = 0.5*(Screen.height - column.spacing*4 - midRow.height - 8) - bonusClock1.height
+        clock1.height = 0.5*(Screen.height - column.spacing*4 - midRow.height - 2)  - stats1.height - bonusClock1.height
         writeClock1()
 
         clock2.color = Theme.highlightColor
         clock2.font.bold = false
         clock2.font.overline = false
         clock2.style = Text.Raised
-        clock2.height = 0.5*(Screen.height - column.spacing*4 - midRow.height - 8) - bonusClock2.height
+        clock2.height = 0.5*(Screen.height - column.spacing*4 - midRow.height - 2) - stats2.height - bonusClock2.height
         writeClock2()
+
+        stats1.text = " "
+        stats2.text = " "
 
         play.enabled = false
 
@@ -362,9 +434,11 @@ Page {
             time1 -= timeStep
             result = time1 + 0.2
             if (time1 < 0) {
+                if (time1 > -1.5*timeStep)
+                    clockFonts()
                 bonus1 -= timeStep
                 if (bonusType < 3.5)
-                    result = byoyomi(1)
+                    result = byoyomi()
                 else
                     result = bonus1
             }
@@ -376,12 +450,61 @@ Page {
     }
 
     function updateClock2() {
-        time2 = time2 - timeStep
+        var result
+
+        if (bonusType < 1.5) {
+            time2 -= timeStep
+            result = time2
+        } else if (bonusType < 2.5) {
+            if (bonus2 > 0)
+                bonus2 -= timeStep
+            else
+                time2 -= timeStep
+            result = time2
+        } else {
+            time2 -= timeStep
+            result = time2 + 0.2
+            if (time2 < 0) {
+                if (time2 > -1.5*timeStep)
+                    clockFonts()
+                bonus2 -= timeStep
+                if (bonusType < 3.5)
+                    result = byoyomi()
+                else
+                    result = bonus2
+            }
+
+        }
 
         gameTime2 += timeStep
-        return time2
+        return result
     }
 
+    function writeExtraTime() {
+        var txt = ""
+        var extra = player1turn ? bonus1 : bonus2
+        var max = player1turn ? bonusTimes10 : bonusTimes20
+        var count = player1turn ? bonusTimes1 : bonusTimes2
+
+        if (bonusType == 2) {
+            txt = qsTr("delay") + " " + (extra/1000).toFixed(0) + " s "
+        } else if (bonusType == 3) {
+            txt = clockText(extra) + " (" + count + "/" + max + ")"
+        } else if (bonusType == 4) {
+            txt = qsTr("%1 moves in").arg(count) + " " + clockText(extra)
+        }
+
+        if (bonusType > 1.5) {
+            if (player1turn)
+                bonusClock1.text = txt
+            else
+                bonusClock2.text = txt
+        }
+
+        return txt
+    }
+
+    /*
     function writeBonus1() {
         var txt = ""
 
@@ -417,6 +540,8 @@ Page {
         return txt
     }
 
+    // */
+
     function writeClock1() {
         var txt = clockText(time1)
 
@@ -439,22 +564,24 @@ Page {
         running: false
         repeat: true
         onTriggered: {
-            if (clock1running) {
+            if (player1turn) {
                 if (updateClock1() <= 0) {
+                    writeExtraTime()
                     gameLost(1)
 
                     gameOverTimer.start()
                 } else {
-                    writeBonus1()
+                    writeExtraTime()
                     writeClock1()
                 }
             } else {
                 if (updateClock2() <= 0) {
+                    writeExtraTime()
                     gameLost(2)
 
                     gameOverTimer.start()
                 } else {
-                    writeBonus2()
+                    writeExtraTime()
                     writeClock2()
                 }
             }
@@ -485,16 +612,16 @@ Page {
 
             Item {
                 width: page.width
-                height: bonusClock1.height + clock1.height
+                height: bonusClock1.height + clock1.height + stats1.height
 
                 Column {
                     spacing: 0
                     Label {
                         id: bonusClock1
-                        text: writeBonus1()
+                        text: "extraTime"
 
                         font.pixelSize: Theme.fontSizeMedium
-                        height: 0.15*Screen.height
+                        height: 0
                         horizontalAlignment: Text.AlignHCenter
                         rotation: 180
                         verticalAlignment: Text.AlignVCenter
@@ -508,13 +635,21 @@ Page {
                         text: writeClock1()
 
                         font.pixelSize: 0.28*page.width //Theme.fontSizeExtraLarge
-                        height: 0.5*(Screen.height - column.spacing*2 - midRow.height) - bonusClock1.height
+                        height: 0.5*(Screen.height - column.spacing*4 - midRow.height) - stats1.height - bonusClock1.height
                         horizontalAlignment: Text.AlignHCenter
                         rotation: 180
                         verticalAlignment: Text.AlignVCenter
                         width: page.width
                         wrapMode: Text.Wrap
 
+                    }
+
+                    Label {
+                        id: stats1
+                        text: " "
+                        rotation: 180
+                        width: page.width
+                        horizontalAlignment: Text.AlignHCenter
                     }
 
                 }
@@ -525,8 +660,17 @@ Page {
                     onClicked: {
                         if (tapToReset)
                             setUp()
-                        else
-                            changeToClock2()
+                        else {
+                            if (clockCounter.running) {
+                                if (player1turn)
+                                    changePlayer()
+                            } else {
+                                if (!gameOverTimer.running)
+                                    startGame(2)
+                            }
+
+                            //changeToClock2()
+                        }
                     }
 
                 }
@@ -642,31 +786,39 @@ Page {
 
             Item {
                 width: page.width
-                height: bonusClock2.height + clock2.height
+                height: bonusClock2.height + clock2.height + stats2.height
 
                 Column {
                     spacing: 0
+
                     Label {
-                            id: clock2
-                            text: writeClock2()
+                        id: stats2
+                        text: " "
+                        width: page.width
+                        horizontalAlignment: Text.AlignHCenter
+                    }
 
-                            font.pixelSize: 0.28*page.width //Theme.fontSizeExtraLarge
-                            height: 0.5*(Screen.height - column.spacing*2 - midRow.height) - bonusClock2.height
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                            width: page.width
-                            wrapMode: Text.Wrap
-                            //x: Theme.paddingLarge
+                    Label {
+                        id: clock2
+                        text: writeClock2()
 
-                        }
+                        font.pixelSize: 0.28*page.width //Theme.fontSizeExtraLarge
+                        height: 0.5*(Screen.height - column.spacing*4 - midRow.height - 2) - stats2.height - bonusClock2.height
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        width: page.width
+                        wrapMode: Text.Wrap
+                        //x: Theme.paddingLarge
+
+                    }
 
 
                     Label {
                         id: bonusClock2
-                        text: writeBonus2()
+                        text: "Extra time"
 
                         font.pixelSize: Theme.fontSizeMedium
-                        height: 0.15*Screen.height
+                        height: 0
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         width: page.width
@@ -682,8 +834,15 @@ Page {
                     onClicked: {
                         if (tapToReset)
                             setUp()
-                        else
-                            changeToClock1()
+                        else {
+                            if (clockCounter.running) {
+                                if (!player1turn)
+                                    changePlayer()
+                            } else {
+                                if (!gameOverTimer.running)
+                                    startGame(1)
+                            }
+                        }
                     }
                 }
 
@@ -699,6 +858,6 @@ Page {
 
     Component.onCompleted: {
         setUp()
+        console.log("onCompleted " + stats1.height + ", " + Theme.paddingLarge + ", " + midRow.height + ", " + play.height)
     }
 }
-

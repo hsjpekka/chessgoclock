@@ -24,15 +24,15 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>in %1 moves</source>
+        <source>total time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>lost</source>
+        <source>%1 moves in</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>total game time</source>
+        <source>moves</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -54,27 +54,11 @@
         <translation>lisäaika siirrosta</translation>
     </message>
     <message>
-        <source>bonus time system</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>no bonus</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>increment (Fisher)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>delay (Bronstein)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>n*secs (Byoyomi)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>N moves in X secs (Canadian Byoyomi)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -95,6 +79,22 @@
     </message>
     <message>
         <source>%1 moves in %2 s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>time system</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>simple</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X s N times (Byo-yomi)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>N moves in X secs (Canadian Byo-yomi)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
