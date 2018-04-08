@@ -4,43 +4,43 @@
 <context>
     <name>Clocks</name>
     <message>
-        <source>adding</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>per move</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>delay</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>after base time</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>after base time %1 moves in %2 s</source>
-        <translation type="unfinished"></translation>
+        <translation>viive</translation>
     </message>
     <message>
         <source>total time</source>
-        <translation type="unfinished"></translation>
+        <translation>kokonaisaika</translation>
     </message>
     <message>
         <source>%1 moves in</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 siirtoa</translation>
     </message>
     <message>
         <source>moves</source>
-        <translation type="unfinished"></translation>
+        <translation>siirtoa</translation>
+    </message>
+    <message>
+        <source>settings</source>
+        <translation>asetukset</translation>
+    </message>
+    <message>
+        <source>adding %1 s per move</source>
+        <translation>lisää %1 s siirtoa kohti</translation>
+    </message>
+    <message>
+        <source>after main time</source>
+        <translation>peliajan jälkeen</translation>
+    </message>
+    <message>
+        <source>after main time %1 moves in %2 s</source>
+        <translation>peliajan jälkeen %1 siirtoa %2 s</translation>
     </message>
 </context>
 <context>
     <name>CoverPage</name>
     <message>
-        <source>My Cover</source>
-        <translation type="unfinished"></translation>
+        <source>Chess & Go clock</source>
+        <translation>Shakki- ja Go-kello</translation>
     </message>
 </context>
 <context>
@@ -50,52 +50,48 @@
         <translation>aika</translation>
     </message>
     <message>
-        <source>bonus per move</source>
-        <translation>lisäaika siirrosta</translation>
+        <source>increment</source>
+        <translation>lisäys</translation>
     </message>
     <message>
-        <source>increment (Fisher)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>delay (Bronstein)</source>
-        <translation type="unfinished"></translation>
+        <source>delay</source>
+        <translation>viive</translation>
     </message>
     <message>
         <source>time periods</source>
-        <translation type="unfinished"></translation>
+        <translation>jaksoa</translation>
     </message>
     <message>
         <source>increment per move</source>
-        <translation type="unfinished"></translation>
+        <translation>lisäys per siirto</translation>
     </message>
     <message>
         <source>delay per move</source>
-        <translation type="unfinished"></translation>
+        <translation>viive</translation>
     </message>
     <message>
         <source>time period</source>
-        <translation type="unfinished"></translation>
+        <translation>jakson pituus</translation>
     </message>
     <message>
         <source>%1 moves in %2 s</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 siirtoa %2 s</translation>
     </message>
     <message>
         <source>time system</source>
-        <translation type="unfinished"></translation>
+        <translation>aikajärjestelmä</translation>
     </message>
     <message>
-        <source>simple</source>
-        <translation type="unfinished"></translation>
+        <source>total time</source>
+        <translation>kokonaisaika</translation>
     </message>
     <message>
-        <source>X s N times (Byo-yomi)</source>
-        <translation type="unfinished"></translation>
+        <source>X s N times</source>
+        <translation>N kertaa X s</translation>
     </message>
     <message>
-        <source>N moves in X secs (Canadian Byo-yomi)</source>
-        <translation type="unfinished"></translation>
+        <source>N moves in X secs (Canadian %1)</source>
+        <translation>N siirtoa X sekunnissa (kanadalainen %1)</translation>
     </message>
 </context>
 </TS>

@@ -143,62 +143,6 @@ Page {
         return
     }
 
-    /*
-    function changeToClock1() {
-        if ((clockCounter.running == false) && (time1 > 0) && (time2 > 0)) {
-            clockCounter.start()
-            clock1.text = clockText(time1)
-            clock2.text = clockText(time2)
-        } else {
-            if (!player1turn) {
-                if (bonusType == 1)
-                    time2 += bonus2
-                else if (bonusType == 2)
-                    bonus2 = bonus20
-                else if (bonusType == 3)
-                    bonus2 = bonus20
-                else if (bonusType == 4)
-                    canadianByoyomi()
-
-                writeBonus2()
-                writeClock2()
-            }
-        }
-
-        player1turn = true
-        clockFonts()
-
-        return
-    }
-
-    function changeToClock2() {
-        if ((clockCounter.running == false) && (time1 > 0) && (time2 > 0)) {
-            clockCounter.start()
-            clock1.text = clockText(time1)
-            clock2.text = clockText(time2)
-        } else {
-            if (player1turn) {
-                if (bonusType == 1)
-                    time1 += bonus1
-                else if (bonusType == 2)
-                    bonus1 = bonus10
-                else if (bonusType == 3)
-                    bonus1 = bonus10
-                else if (bonusType == 4)
-                    canadianByoyomi()
-
-                writeBonus1()
-                writeClock1()
-            }
-        }
-
-        player1turn = false
-        clockFonts()
-
-        return
-    }
-
-    // */
     function clockFonts() {
         if (player1turn) {
             clock1.font.bold = true
@@ -366,9 +310,9 @@ Page {
 
         } else if (bonusType == 1) {
             bonusClock1.height = 0.1*Screen.height
-            bonusClock1.text = qsTr("adding") + " " + bonus1/1000 + " s " + qsTr("per move")
+            bonusClock1.text = qsTr("adding %1 s per move").arg(bonus1/1000)// + " " +  + " s " + qsTr("per move")
             bonusClock2.height = 0.1*Screen.height
-            bonusClock2.text = qsTr("adding") + " " + bonus2/1000 + " s " + qsTr("per move")
+            bonusClock2.text = qsTr("adding %1 s per move").arg(bonus2/1000)//qsTr("adding") + " " + bonus2/1000 + " s " + qsTr("per move")
         } else if (bonusType == 2) {
             bonusClock1.text = qsTr("delay") + " " + bonus1/1000 + " s "
             bonusClock1.height = 0.15*Screen.height
@@ -378,17 +322,17 @@ Page {
             bonusClock2.height = 0.15*Screen.height
             bonusClock2.font.pixelSize = Theme.fontSizeLarge
         } else if (bonusType == 3) {
-            bonusClock1.text = qsTr("after base time") + " " + bonusTimes10 + " x " + bonus10/1000 + " s"
+            bonusClock1.text = qsTr("after main time") + " " + bonusTimes10 + " x " + bonus10/1000 + " s"
             bonusClock1.height = 0.2*Screen.height
             bonusClock1.font.pixelSize = Theme.fontSizeLarge
-            bonusClock2.text = qsTr("after base time") + " " + bonusTimes20 + " x " + bonus20/1000 + " s"
+            bonusClock2.text = qsTr("after main time") + " " + bonusTimes20 + " x " + bonus20/1000 + " s"
             bonusClock2.height = 0.2*Screen.height
             bonusClock2.font.pixelSize = Theme.fontSizeLarge
         } else if (bonusType == 4) {
-            bonusClock1.text = qsTr("after base time %1 moves in %2 s").arg(bonusTimes10).arg(bonus10/1000)
+            bonusClock1.text = qsTr("after main time %1 moves in %2 s").arg(bonusTimes10).arg(bonus10/1000)
             bonusClock1.height = 0.2*Screen.height
             bonusClock1.font.pixelSize = Theme.fontSizeLarge
-            bonusClock2.text = qsTr("after base time %1 moves in %2 s").arg(bonusTimes20).arg(bonus20/1000)
+            bonusClock2.text = qsTr("after main time %1 moves in %2 s").arg(bonusTimes20).arg(bonus20/1000)
             bonusClock2.height = 0.2*Screen.height
             bonusClock2.font.pixelSize = Theme.fontSizeLarge
         }
@@ -503,44 +447,6 @@ Page {
 
         return txt
     }
-
-    /*
-    function writeBonus1() {
-        var txt = ""
-
-        if (bonusType == 2) {
-            txt = qsTr("delay") + " " + (bonus1/1000).toFixed(0) + " s "
-        } else if (bonusType == 3) {
-            txt = (bonus1/1000).toFixed(0) + " s (/" + bonus10/1000 + " * " + bonusTimes1 + ")"
-        } else if (bonusType == 4) {
-            txt = (bonus1/1000).toFixed(0) + " s " + qsTr("in %1 moves").arg(bonusTimes1)
-        }
-
-        if (bonusType > 1.5) {
-            bonusClock1.text = txt
-        }
-
-        return txt
-    }
-
-    function writeBonus2() {
-        var txt =""
-
-        if (bonusType == 2) {
-            txt = qsTr("delay") + " " + (bonus2/1000).toFixed(0) + " s "
-        } else if (bonusType == 3) {
-            txt = (bonus2/1000).toFixed(0) + " s (/" + bonus20/1000 + " * " + bonusTimes2 + ")"
-        } else if (bonusType == 4) {
-            txt = (bonus2/1000).toFixed(0) + " s " + qsTr("in %1 moves").arg(bonusTimes2)
-        }
-
-        if (bonusType > 1.5) {
-            bonusClock2.text = txt
-        }
-        return txt
-    }
-
-    // */
 
     function writeClock1() {
         var txt = clockText(time1)
@@ -734,16 +640,17 @@ Page {
                                 time02 = ((hours2*60 + minutes2)*60 + seconds2)*1000
                                 time1 = time01
                                 time2 = time02
-                                text = clockText(time01) + ( time01 === time02 ? "" : " - " + clockText(time02))
+                                //text = clockText(time01) + ( time01 === time02 ? "" : " - " + clockText(time02))
                                 setUp()
                             })
                         }
 
                         width: Theme.fontSizeMedium*10
-                        text: clockText(time01) + ( time01 === time02 ? "" : " - " + clockText(time02)) // textField
+                        text: qsTr("settings")
+                        label: clockText(time01) + ( time01 === time02 ? "" : " - " + clockText(time02)) // textField
                         readOnly: true // TextField
                         horizontalAlignment: TextInput.AlignHCenter //TextField
-                        labelVisible: false
+                        //labelVisible: false
                         onClicked: {
                             if (!clockCounter.running)
                                 openSettingsDialog()

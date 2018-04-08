@@ -81,19 +81,27 @@ Dialog {
                     bonusType = currentIndex
                     bonusVisible = bonusType > 0.5 ? true : false
                     if (bonusType == 1) {
+                        if (bonusT1 == 0)
+                            bonusT1 = 5
+                        if (bonusT2 == 0)
+                            bonusT2 = 5
                         txtPlaceHolder = qsTr("increment per move") + " [s]"
                     } else if (bonusType == 2) {
+                        if (bonusT1 == 0)
+                            bonusT1 = 5
+                        if (bonusT2 == 0)
+                            bonusT2 = 5
                         txtPlaceHolder = qsTr("delay per move") + " [s]"
                     } else {
                         if (bonusType == 3) {
                             if (bonusT1 < 1)
                                 bonusT1 = 15
                             if (bonusPeriods1 < 1)
-                                bonusPeriods1 = 1
+                                bonusPeriods1 = 3
                             if (bonusT2 < 1)
                                 bonusT2 = 15
                             if (bonusPeriods2 < 1)
-                                bonusPeriods2 = 1
+                                bonusPeriods2 = 3
                         } else {
                             if (bonusT1 < 1)
                                 bonusT1 = 5*60
@@ -111,11 +119,11 @@ Dialog {
                 }
 
                 menu: ContextMenu {
-                    MenuItem { text: qsTr("simple") }
-                    MenuItem { text: qsTr("increment (Fisher)") }
-                    MenuItem { text: qsTr("delay (Bronstein)") }
-                    MenuItem { text: qsTr("X s N times (Byo-yomi)") }
-                    MenuItem { text: qsTr("N moves in X secs (Canadian Byo-yomi)") }
+                    MenuItem { text: qsTr("total time") }
+                    MenuItem { text: qsTr("increment") +  " (Fisher)" }
+                    MenuItem { text: qsTr("delay") + " (Bronstein)" }
+                    MenuItem { text: qsTr("X s N times") +  "(Byo-yomi)" }
+                    MenuItem { text: qsTr("N moves in X secs (Canadian %1)").arg("Byo-yomi") }
                 }
             }
 
@@ -152,8 +160,9 @@ Dialog {
             TextField {
                 id: txtBonus1
                 text: bonusT1 == 0 ? "" : bonusT1
-                width: 0.5*sliderWidth - 2*Theme.paddingLarge
+                width: sliderWidth - 2*Theme.paddingLarge
                 placeholderText: txtPlaceHolder
+                label: txtPlaceHolder
                 validator: IntValidator{}
                 inputMethodHints: Qt.ImhDigitsOnly
                 x: Theme.paddingLarge
@@ -217,7 +226,8 @@ Dialog {
                 id: txtBonus2
                 text: bonusT2 == 0 ? "" : bonusT2
                 width: sliderWidth - 2*Theme.paddingLarge
-                placeholderText: qsTr("bonus per move") + " [s]"
+                placeholderText: txtPlaceHolder
+                label: txtPlaceHolder
                 validator: IntValidator{}
                 inputMethodHints: Qt.ImhDigitsOnly
                 visible: equalTimes.checked ? false : bonusVisible
