@@ -33,7 +33,6 @@ import Sailfish.Silica 1.0
 
 import "../utils"
 
-
 Page {
     id: page
 
@@ -249,8 +248,8 @@ Page {
 
         loser.color = Theme.primaryColor
 
-        stats1.text = qsTr("total time") + " " + clockText(gameTime1) + ", " + qsTr("moves") + " " + moves1
-        stats2.text = qsTr("total time") + " " + clockText(gameTime2) + ", " + qsTr("moves") + " " + moves2
+        stats1.text = qsTr("total time") + " " + clockText(gameTime1) + ", " + moves1 + " " + qsTr("moves")
+        stats2.text = qsTr("total time") + " " + clockText(gameTime2) + ", " + moves2 + " " + qsTr("moves")
 
         return
     }
@@ -362,8 +361,6 @@ Page {
     function updateClock1() {
         var result                
 
-        //console.log("updateClock1-0 " + bonusType )
-
         if (bonusType < 1.5) {
             time1 -= timeStep
             result = time1
@@ -373,7 +370,6 @@ Page {
             else
                 time1 -= timeStep
             result = time1
-            //console.log("updateClock1-2 " + bonus1 + " ")
         } else {
             time1 -= timeStep
             result = time1 + 0.2
@@ -575,7 +571,6 @@ Page {
                                     startGame(2)
                             }
 
-                            //changeToClock2()
                         }
                     }
 
@@ -765,6 +760,5 @@ Page {
 
     Component.onCompleted: {
         setUp()
-        console.log("onCompleted " + stats1.height + ", " + Theme.paddingLarge + ", " + midRow.height + ", " + play.height)
     }
 }

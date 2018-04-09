@@ -39,7 +39,7 @@
 <context>
     <name>CoverPage</name>
     <message>
-        <source>My Cover</source>
+        <source>Chess and Go clock</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -35,7 +35,7 @@ CoverBackground {
     Label {
         id: label
         anchors.centerIn: parent
-        text: qsTr("Chess & Go clock")
+        text: qsTr("Chess and Go clock")
     }
 
     CoverActionList {

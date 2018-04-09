@@ -39,7 +39,7 @@
 <context>
     <name>CoverPage</name>
     <message>
-        <source>Chess & Go clock</source>
+        <source>Chess and Go clock</source>
         <translation>Shakki- ja Go-kello</translation>
     </message>
 </context>
