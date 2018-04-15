@@ -30,6 +30,7 @@
 
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import Sailfish.Pickers 1.0
 
 Dialog {
 //Page {
@@ -52,6 +53,11 @@ Dialog {
     property bool bonusVisible: false
     property bool equals: true
     property int sliderWidth: page.width*0.8
+
+    property bool useSounds: false
+    property string soundFile: ambientPath + "positive_confirmation.wav" // ringtonesPath + "jolla-calendar-alarm.ogg"
+    property string ringtonesPath: "/usr/share/sounds/jolla-ringtones/stereo/"
+    property string ambientPath: "/usr/share/sounds/jolla-ambient/stereo/"
 
     SilicaFlickable {
         id: flickable
@@ -245,10 +251,51 @@ Dialog {
                 valueText: bonusType < 3.5 ? ( value.toFixed(0) + " " + qsTr("time periods")) : qsTr("%1 moves in %2 s").arg(value.toFixed(0)).arg(txtBonus2.text)
             }
 
+            TextSwitch {
+                id: soundSwitch
+                checked: useSounds
+                text: useSounds? qsTr("clangs when time is over") : qsTr("remains silent")
+                onClicked: useSounds = !useSounds
+            }
+
+            Row {
+                id: fileRow
+                x: Theme.paddingLarge
+                spacing: Theme.paddingSmall
+
+                TextField {
+                    id: txtSound
+                    text: soundFile
+                    width: page.width - fileRow.x - Theme.paddingLarge - changeSound.width - fileRow.spacing
+                    visible: useSounds
+                }
+
+                IconButton {
+                    id: changeSound
+                    icon.source: "image://theme/icon-m-folder"
+                    visible: useSounds
+                    onClicked: {
+                        pageStack.push(filePicker)
+                    }
+                }
+
+
+            }
+
         }
 
         VerticalScrollDecorator {}
 
+    }
+
+    Component {
+        id: filePicker
+        FilePickerPage {
+            nameFilters: [ '*.wav', '*.ogg', '*.oga', '*.mp3']
+            onSelectedContentPropertiesChanged: {
+                soundFile = selectedContentProperties.filePath
+            }
+        }
     }
 
     Component.onCompleted: {
@@ -277,6 +324,5 @@ Dialog {
             bonusPeriods2 = txtBonusPeriods2.value
         }
 
-        //console.log("TimeSettings-N "+ bonusT1 + " " + bonusPeriods1)
     }
 }

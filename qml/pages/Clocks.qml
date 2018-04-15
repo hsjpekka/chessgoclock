@@ -30,6 +30,7 @@
 
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import QtMultimedia 5.0
 
 import "../utils"
 
@@ -58,6 +59,9 @@ Page {
     property int gameOverWaitTime: 5*1000
     property bool player1turn: true
     property bool tapToReset: false
+
+    property bool clangAtEnd: false
+    property string alarmFile: "/usr/share/sounds/jolla-ambient/stereo/positive_confirmation.wav"
 
     function byoyomi() {
         var result
@@ -238,7 +242,6 @@ Page {
     function gameLost(player) {
         var clo = player1turn ? clock1 : clock2
         var loser = player1turn ? bonusClock1 : bonusClock2
-        //var winner = player1turn ? bonusClock2 : bonusClock1
 
         clockCounter.running = false
 
@@ -250,6 +253,9 @@ Page {
 
         stats1.text = qsTr("total time") + " " + clockText(gameTime1) + ", " + moves1 + " " + qsTr("moves")
         stats2.text = qsTr("total time") + " " + clockText(gameTime2) + ", " + moves2 + " " + qsTr("moves")
+
+        if (clangAtEnd)
+            alarm.play()
 
         return
     }
@@ -265,6 +271,8 @@ Page {
 
             clockFonts()
             clockCounter.start()
+
+            play.enabled = false
 
         }
 
@@ -299,19 +307,17 @@ Page {
         bonusClock2.style = Text.Normal
 
         if (bonusType == 0) {
-            //bonusClock1.visible = false
             bonusClock1.height = 0.1*Screen.height
             bonusClock1.text = " "
 
-            //bonusClock2.visible = false
             bonusClock2.height = 0.1*Screen.height
             bonusClock2.text = " "
 
         } else if (bonusType == 1) {
             bonusClock1.height = 0.1*Screen.height
-            bonusClock1.text = qsTr("adding %1 s per move").arg(bonus1/1000)// + " " +  + " s " + qsTr("per move")
+            bonusClock1.text = qsTr("adding %1 s per move").arg(bonus1/1000)
             bonusClock2.height = 0.1*Screen.height
-            bonusClock2.text = qsTr("adding %1 s per move").arg(bonus2/1000)//qsTr("adding") + " " + bonus2/1000 + " s " + qsTr("per move")
+            bonusClock2.text = qsTr("adding %1 s per move").arg(bonus2/1000)
         } else if (bonusType == 2) {
             bonusClock1.text = qsTr("delay") + " " + bonus1/1000 + " s "
             bonusClock1.height = 0.15*Screen.height
@@ -354,6 +360,9 @@ Page {
         stats2.text = " "
 
         play.enabled = false
+
+        if (clangAtEnd)
+            alarm.stop()
 
         return
     }
@@ -589,7 +598,6 @@ Page {
                 spacing: Theme.paddingLarge
                 //x: Theme.paddingLarge // 0.1*page.width
 
-                    //ValueButton {
                 TextField {
                         id: playTime1
                         property int hours1: 0
@@ -611,7 +619,9 @@ Page {
                                             secsPlayer2: seconds2,
                                             bonusT2: bonus20/1000,
                                             bonusPeriods2: bonusTimes20,
-                                            bonusType: bonusType
+                                            bonusType: bonusType,
+                                            useSounds: clangAtEnd,
+                                            soundFile: alarmFile
                                          })
 
                             dialog.accepted.connect(function() {
@@ -630,22 +640,22 @@ Page {
                                 bonusTimes20 = dialog.bonusPeriods2
                                 bonusTimes2 = bonusTimes20
                                 bonusType= dialog.bonusType
+                                clangAtEnd = dialog.useSounds
+                                alarmFile = dialog.soundFile
 
                                 time01 = ((hours1*60 + minutes1)*60 + seconds1)*1000
                                 time02 = ((hours2*60 + minutes2)*60 + seconds2)*1000
                                 time1 = time01
                                 time2 = time02
-                                //text = clockText(time01) + ( time01 === time02 ? "" : " - " + clockText(time02))
                                 setUp()
                             })
                         }
 
                         width: Theme.fontSizeMedium*10
                         text: qsTr("settings")
-                        label: clockText(time01) + ( time01 === time02 ? "" : " - " + clockText(time02)) // textField
-                        readOnly: true // TextField
-                        horizontalAlignment: TextInput.AlignHCenter //TextField
-                        //labelVisible: false
+                        label: clockText(time01) + ( time01 === time02 ? "" : " - " + clockText(time02))
+                        readOnly: true
+                        horizontalAlignment: TextInput.AlignHCenter
                         onClicked: {
                             if (!clockCounter.running)
                                 openSettingsDialog()
@@ -704,13 +714,12 @@ Page {
                         id: clock2
                         text: writeClock2()
 
-                        font.pixelSize: 0.28*page.width //Theme.fontSizeExtraLarge
+                        font.pixelSize: 0.28*page.width
                         height: 0.5*(Screen.height - column.spacing*4 - midRow.height - 2) - stats2.height - bonusClock2.height
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         width: page.width
                         wrapMode: Text.Wrap
-                        //x: Theme.paddingLarge
 
                     }
 
@@ -756,6 +765,11 @@ Page {
 
     ScreenBlank {
         enabled: true
+    }
+
+    Audio {
+        id: alarm
+        source: alarmFile        
     }
 
     Component.onCompleted: {

@@ -93,5 +93,13 @@
         <source>N moves in X secs (Canadian %1)</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>clangs when time is over</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>remains silent</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 </TS>

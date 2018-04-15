@@ -93,5 +93,13 @@
         <source>N moves in X secs (Canadian %1)</source>
         <translation>N siirtoa X sekunnissa (kanadalainen %1)</translation>
     </message>
+    <message>
+        <source>clangs when time is over</source>
+        <translation>kilahtaa ajan loputtua</translation>
+    </message>
+    <message>
+        <source>remains silent</source>
+        <translation>pysyy vaiti</translation>
+    </message>
 </context>
 </TS>

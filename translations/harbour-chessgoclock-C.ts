@@ -39,7 +39,7 @@
 <context>
     <name>CoverPage</name>
     <message>
-        <source>Chess & Go clock</source>
+        <source>Chess and Go clock</source>
         <translation>Shakki- ja Go-kello</translation>
     </message>
 </context>
@@ -92,6 +92,14 @@
     <message>
         <source>N moves in X secs (Canadian %1)</source>
         <translation>N siirtoa X sekunnissa (kanadalainen %1)</translation>
+    </message>
+    <message>
+        <source>clangs when time is over</source>
+        <translation>kilahtaa ajan loputtua</translation>
+    </message>
+    <message>
+        <source>remains silent</source>
+        <translation>pysyy vaiti</translation>
     </message>
 </context>
 </TS>
