@@ -581,6 +581,10 @@ Page {
                             }
 
                         }
+
+                        if (clangAtEnd && gameOverTimer.running)
+                            alarm.stop()
+
                     }
 
                 }
@@ -659,6 +663,10 @@ Page {
                         onClicked: {
                             if (!clockCounter.running)
                                 openSettingsDialog()
+
+                            if (clangAtEnd && gameOverTimer.running)
+                                alarm.stop()
+
                         }
                     }
 
@@ -668,6 +676,9 @@ Page {
                         onPressAndHold: {
                             clockCounter.stop()
                             play.enabled = true
+
+                            if (clangAtEnd && gameOverTimer.running)
+                                alarm.stop()
                         }
 
                         enabled: clockCounter.running
@@ -683,6 +694,10 @@ Page {
                             } else {
                                 setUp()
                             }
+
+                            if (clangAtEnd && gameOverTimer.running)
+                                alarm.stop()
+
                         }
 
                         enabled: false
@@ -753,7 +768,13 @@ Page {
                                 if (!gameOverTimer.running)
                                     startGame(1)
                             }
+
                         }
+
+                        if (clangAtEnd && gameOverTimer.running){
+                            alarm.stop()
+                        }
+
                     }
                 }
 
