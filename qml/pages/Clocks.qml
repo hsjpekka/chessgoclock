@@ -784,8 +784,9 @@ Page {
 
     }
 
-    ScreenBlank {
-        enabled: true
+    ScreenBlank { //prevents screen from locking and turning off
+        id: unblankScreen
+        enabled: clockCounter.running
     }
 
     Audio {
