@@ -36,15 +36,9 @@ import "../utils"
 
 Page {
     id: page
+    allowedOrientations: Orientation.All //viewOrientation
 
-    property int moves1: 0
-    property int moves2: 0
-    property int time01: 30*60*1000
-    property int time02: 30*60*1000
-    property int time1: time01
-    property int time2: time02
-    property int gameTime1 // total used time
-    property int gameTime2
+    property string alarmFile: "/usr/share/sounds/jolla-ambient/stereo/positive_confirmation.wav"
     property int bonus1: 0 //ms
     property int bonus2: 0 //ms
     property int bonus10: 0 //ms
@@ -55,13 +49,25 @@ Page {
     property int bonusTimes20: 0
     property int bonusType: 0 // 0 - no bonus, 1 - +X s per move (Fischer), 2 - delay before counting (Bronstein),
                                 //3 - after game time N x X extras (Byoyomi), 4 - N moves in X s (Canadian Byoyomi)
-    property int timeStep: 100 //ms
-    property int gameOverWaitTime: 5*1000
-    property bool player1turn: true
-    property bool tapToReset: false
-
     property bool clangAtEnd: false
-    property string alarmFile: "/usr/share/sounds/jolla-ambient/stereo/positive_confirmation.wav"
+    property int gameOverWaitTime: 5*1000
+    property int gameTime1 // total used time
+    property int gameTime2
+    property real midSectionSize: pause.height + 2*Theme.paddingSmall
+    property int moves1: 0
+    property int moves2: 0
+    property bool player1turn: true
+    //property bool portrait: (page.orientation === Orientation.Portrait || page.orientation === Orientation.PortraitInverted) ? true : false
+    property bool tapToReset: false
+    property real tileSize: clockSize()
+    property int time01: 30*60*1000
+    property int time02: 30*60*1000
+    property int time1: time01
+    property int time2: time02
+    property int timeStep: 100 //ms
+    //property int viewOrientation: Orientation.All
+    property real xPadding: (isPortrait) ? 0 : (page.width - clockTile1.width - clockTile2.width - midSectionSize)/4
+    property real yPadding: (isPortrait) ? (page.height - clockTile1.height - clockTile2.height - midSectionSize)/4 : 0
 
     function byoyomi() {
         var result
@@ -158,13 +164,15 @@ Page {
 
             if (bonusType > 2.5) {
                 if (time1 < 0) {
-                    bonusClock1.height = 0.2*Screen.height
-                    bonusClock1.font.pixelSize = Theme.fontSizeHuge
+                    //bonusClock1.height = 0.2*Screen.height
+                    bonusClock1.font.pixelSize = Theme.fontSizeHuge*1.5
                     bonusClock1.font.bold = true
                     bonusClock1.color = Theme.secondaryHighlightColor
                     bonusClock1.style = Text.Raised
 
-                    clock1.height = 0.5*(Screen.height - column.spacing*4 - midRow.height - 2) - stats1.height - bonusClock1.height
+                    clock1.font.pixelSize = Theme.fontSizeHuge*2
+
+                    //clock1.height = 0.5*(Screen.height - column.spacing*4 - midRow.height - 2) - stats1.height - bonusClock1.height
 
                 }
                 if (time2 < 0) {
@@ -184,13 +192,14 @@ Page {
 
             if (bonusType > 2.5) {
                 if (time2 < 0) {
-                    bonusClock2.height = 0.2*Screen.height
-                    bonusClock2.font.pixelSize = Theme.fontSizeHuge
+                    //bonusClock2.height = 0.2*Screen.height
+                    bonusClock2.font.pixelSize = Theme.fontSizeHuge*1.5
                     bonusClock2.font.bold = true
                     bonusClock2.color = Theme.secondaryHighlightColor
                     bonusClock2.style = Text.Raised
 
-                    clock2.height = 0.5*(Screen.height - column.spacing*4 - midRow.height - 2) - stats2.height - bonusClock2.height
+                    clock2.font.pixelSize = Theme.fontSizeHuge*2
+                    //clock2.height = 0.5*(Screen.height - column.spacing*4 - midRow.height - 2) - stats2.height - bonusClock2.height
 
                 }
                 if (time1 < 0) {
@@ -239,6 +248,13 @@ Page {
         return timeTxt
     }
 
+    function clockSize() {
+        var size1 = isPortrait ? page.width : page.height
+        var size3 = isPortrait ? (page.height - midSectionSize)/2 : (page.width - midSectionSize)/2
+        //console.log("koot " + size1 + " " + size3 + " " + page.height + " " + page.width + " " + midSectionSize)
+        return Math.min(size1,size3)
+    }
+
     function gameLost(player) {
         var clo = player1turn ? clock1 : clock2
         var loser = player1turn ? bonusClock1 : bonusClock2
@@ -256,6 +272,72 @@ Page {
 
         if (clangAtEnd)
             alarm.play()
+
+        return
+    }
+
+    function openSettingsDialog() {
+        var hours1, minutes1, seconds1, hours2, minutes2, seconds2
+        var sec = 1000, min = 60*sec, h = 60*min
+
+        hours1 = Math.floor(time01/h)
+        minutes1 = Math.floor((time01-hours1*h)/min)
+        seconds1 = Math.floor((time01-hours1*h-minutes1*min)/sec)
+
+        hours2 = Math.floor(time02/h)
+        minutes2 = Math.floor((time02-hours2*h)/min)
+        seconds2 = Math.floor((time02-hours2*h-minutes2*min)/sec)
+
+        var dialog = pageStack.push(Qt.resolvedUrl("TimeSettings.qml"), {
+                        hoursPlayer1: hours1,
+                        minsPlayer1: minutes1,
+                        secsPlayer1: seconds1,
+                        bonusT1: bonus10/1000,
+
+                                        bonusPeriods1: bonusTimes10,
+                        hoursPlayer2: hours2,
+                        minsPlayer2: minutes2,
+                        secsPlayer2: seconds2,
+                        bonusT2: bonus20/1000,
+                        bonusPeriods2: bonusTimes20,
+                        bonusType: bonusType,
+                        useSounds: clangAtEnd,
+                        soundFile: alarmFile//,
+                        //screenOrientation: viewOrientation
+                     })
+
+        dialog.accepted.connect(function() {
+            hours1 = dialog.hoursPlayer1
+            minutes1 = dialog.minsPlayer1
+            seconds1 = dialog.secsPlayer1
+            bonus1 = dialog.bonusT1*1000
+            bonus10 = bonus1
+            bonusTimes10 = dialog.bonusPeriods1
+            bonusTimes1 = bonusTimes10
+            time01 = ((hours1*60 + minutes1)*60 + seconds1)*1000
+            time1 = time01
+
+            hours2 = dialog.hoursPlayer2
+            minutes2 = dialog.minsPlayer2
+            seconds2 = dialog.secsPlayer2
+            bonus2 = dialog.bonusT2*1000
+            bonus20 = bonus2
+            bonusTimes20 = dialog.bonusPeriods2
+            bonusTimes2 = bonusTimes20
+            time02 = ((hours2*60 + minutes2)*60 + seconds2)*1000
+            time2 = time02
+
+
+            bonusType = dialog.bonusType
+            clangAtEnd = dialog.useSounds
+            alarmFile = dialog.soundFile
+
+            //viewOrientation = dialog.screenOrientation
+            //console.log("asento " + viewOrientation + " leveys " + page.width + " korkeus " + page.height)
+            setUp()
+
+            return
+        })
 
         return
     }
@@ -291,69 +373,61 @@ Page {
 
         bonus1 = bonus10
         bonusTimes1 = bonusTimes10
-        bonusClock1.font.pixelSize = Theme.fontSizeMedium
         bonusClock1.visible = true
         bonusClock1.font.bold = false
         bonusClock1.color = Theme.primaryColor
         bonusClock1.style = Text.Normal
 
-
         bonus2 = bonus20
         bonusTimes2 = bonusTimes20
-        bonusClock2.font.pixelSize = Theme.fontSizeMedium
         bonusClock2.visible = true
         bonusClock2.font.bold = false
         bonusClock2.color = Theme.primaryColor
         bonusClock2.style = Text.Normal
 
+        setUpFontSizes()
+
         if (bonusType == 0) {
-            bonusClock1.height = 0.1*Screen.height
+            //bonusClock1.height = 0.1*Screen.height
             bonusClock1.text = " "
 
-            bonusClock2.height = 0.1*Screen.height
+            //bonusClock2.height = 0.1*Screen.height
             bonusClock2.text = " "
 
         } else if (bonusType == 1) {
-            bonusClock1.height = 0.1*Screen.height
+            //bonusClock1.height = 0.1*Screen.height
             bonusClock1.text = qsTr("adding %1 s per move").arg(bonus1/1000)
-            bonusClock2.height = 0.1*Screen.height
+            //bonusClock2.height = 0.1*Screen.height
             bonusClock2.text = qsTr("adding %1 s per move").arg(bonus2/1000)
         } else if (bonusType == 2) {
             bonusClock1.text = qsTr("delay") + " " + bonus1/1000 + " s "
-            bonusClock1.height = 0.15*Screen.height
-            bonusClock1.font.pixelSize = Theme.fontSizeLarge
-
+            //bonusClock1.height = 0.15*Screen.height
             bonusClock2.text = qsTr("delay") + " " + bonus2/1000 + " s "
-            bonusClock2.height = 0.15*Screen.height
-            bonusClock2.font.pixelSize = Theme.fontSizeLarge
+            //bonusClock2.height = 0.15*Screen.height
         } else if (bonusType == 3) {
             bonusClock1.text = qsTr("after main time") + " " + bonusTimes10 + " x " + bonus10/1000 + " s"
-            bonusClock1.height = 0.2*Screen.height
-            bonusClock1.font.pixelSize = Theme.fontSizeLarge
+            //bonusClock1.height = 0.2*Screen.height
             bonusClock2.text = qsTr("after main time") + " " + bonusTimes20 + " x " + bonus20/1000 + " s"
-            bonusClock2.height = 0.2*Screen.height
-            bonusClock2.font.pixelSize = Theme.fontSizeLarge
+            //bonusClock2.height = 0.2*Screen.height
         } else if (bonusType == 4) {
             bonusClock1.text = qsTr("after main time %1 moves in %2 s").arg(bonusTimes10).arg(bonus10/1000)
-            bonusClock1.height = 0.2*Screen.height
-            bonusClock1.font.pixelSize = Theme.fontSizeLarge
+            //bonusClock1.height = 0.2*Screen.height
             bonusClock2.text = qsTr("after main time %1 moves in %2 s").arg(bonusTimes20).arg(bonus20/1000)
-            bonusClock2.height = 0.2*Screen.height
-            bonusClock2.font.pixelSize = Theme.fontSizeLarge
+            //bonusClock2.height = 0.2*Screen.height
         }
 
         clock1.color = Theme.highlightColor
         clock1.font.bold = false
         clock1.font.overline = false
         clock1.style = Text.Raised
-        clock1.height = 0.5*(Screen.height - column.spacing*4 - midRow.height - 2)  - stats1.height - bonusClock1.height
+        //clock1.height = 0.5*(Screen.height - column.spacing*4 - midRow.height - 2)  - stats1.height - bonusClock1.height
         writeClock1()
 
         clock2.color = Theme.highlightColor
         clock2.font.bold = false
         clock2.font.overline = false
         clock2.style = Text.Raised
-        clock2.height = 0.5*(Screen.height - column.spacing*4 - midRow.height - 2) - stats2.height - bonusClock2.height
+        //clock2.height = 0.5*(Screen.height - column.spacing*4 - midRow.height - 2) - stats2.height - bonusClock2.height
         writeClock2()
 
         stats1.text = " "
@@ -364,6 +438,17 @@ Page {
         if (clangAtEnd)
             alarm.stop()
 
+        return
+    }
+
+    function setUpFontSizes() {
+        if (bonusType < 1.5) {
+            bonusClock1.font.pixelSize = Theme.fontSizeMedium
+            bonusClock2.font.pixelSize = Theme.fontSizeMedium
+        } else {
+            bonusClock1.font.pixelSize = Theme.fontSizeLarge
+            bonusClock2.font.pixelSize = Theme.fontSizeLarge
+        }
         return
     }
 
@@ -440,7 +525,8 @@ Page {
         } else if (bonusType == 3) {
             txt = clockText(extra) + " (" + count + "/" + max + ")"
         } else if (bonusType == 4) {
-            txt = qsTr("%1 moves in").arg(count) + " " + clockText(extra)
+            //txt = qsTr("%1 moves in").arg(count) + " " + clockText(extra)
+            txt = count + "  -  "  + clockText(extra)
         }
 
         if (bonusType > 1.5) {
@@ -510,274 +596,351 @@ Page {
         }
     }
 
-    SilicaFlickable {
-        anchors.fill: parent
+    Item { // clock1
+        //height: bonusClock1.height + clock1.height + stats1.height
+        id: clockTile1
+        height: tileSize //clockSize()
+        width: height
+        x: (isPortrait) ? 0.5*(page.width - width) : xPadding
+        y: (isPortrait) ? yPadding : 0.5*(page.height - height)
 
-        contentHeight: column.height
+        state: isPortrait ? "vertical" : "horizontal"
+        states: [
+            State {
+                name: "horizontal"
 
-        Column {
-            id: column
+                AnchorChanges {
+                    target: bonusClock1
+                    anchors.top: undefined
+                    anchors.bottom: clockTile1.bottom
+                }
 
-            width: page.width
-            spacing: Theme.paddingLarge
+                AnchorChanges {
+                    target: stats1
+                    anchors.top: clockTile1.top
+                    anchors.bottom: undefined
+                }
+            },
 
-            Item {
-                width: page.width
-                height: bonusClock1.height + clock1.height + stats1.height
+            State {
+                name: "vertical"
 
-                Column {
-                    spacing: 0
-                    Label {
-                        id: bonusClock1
-                        text: "extraTime"
+                AnchorChanges {
+                    target: bonusClock1
+                    anchors.top: clockTile1.top
+                    anchors.bottom: undefined
+                }
 
-                        font.pixelSize: Theme.fontSizeMedium
-                        height: 0
-                        horizontalAlignment: Text.AlignHCenter
-                        rotation: 180
-                        verticalAlignment: Text.AlignVCenter
-                        width: page.width
-                        wrapMode: Text.Wrap
+                AnchorChanges {
+                    target: stats1
+                    anchors.top: undefined
+                    anchors.bottom: clockTile1.bottom
+                }
+            }
+        ]  // */
 
-                    }
+        Label {
+            id: bonusClock1
+            //x: clockTile1.x
+            //y: (isPortrait) ? (0.5*(clockTile1.height - clock1.height) - height)/2 : 0.5*(page.height - height)
+            //y: (isPortrait) ? (0.5*(clockTile1.height - clock1.height) - height)/2 + height : (0.5*(clockTile1.height - clock1.height) - height)/2
+            anchors.top: clockTile1.top
+            anchors.horizontalCenter: clockTile1.horizontalCenter
+            text: "" // "extraTime"
 
-                    Label {
-                        id: clock1
-                        text: writeClock1()
+            font.pixelSize: Theme.fontSizeMedium
+            //height: 0
+            horizontalAlignment: Text.AlignHCenter
+            rotation: (isPortrait) ? 180 : 0
+            verticalAlignment: Text.AlignVCenter
+            width: clockTile1.width
+            wrapMode: Text.Wrap
 
-                        font.pixelSize: 0.28*page.width //Theme.fontSizeExtraLarge
-                        height: 0.5*(Screen.height - column.spacing*4 - midRow.height) - stats1.height - bonusClock1.height
-                        horizontalAlignment: Text.AlignHCenter
-                        rotation: 180
-                        verticalAlignment: Text.AlignVCenter
-                        width: page.width
-                        wrapMode: Text.Wrap
+        }
 
-                    }
+        Label {
+            id: clock1
+            //anchors.top: bonusClock1.bottom
+            anchors.horizontalCenter: clockTile1.horizontalCenter
+            y: 0.5*(clockTile1.height - height)
 
-                    Label {
-                        id: stats1
-                        text: " "
-                        rotation: 180
-                        width: page.width
-                        horizontalAlignment: Text.AlignHCenter
+            text: writeClock1()
+
+            font.pixelSize: 0.3*clockTile1.width //Theme.fontSizeExtraLarge
+            height: clockTile1.heigt - stats1.height - bonusClock1.height
+            horizontalAlignment: Text.AlignHCenter
+            rotation: (isPortrait) ? 180 : 0
+            verticalAlignment: Text.AlignVCenter
+            width: clockTile1.width
+            wrapMode: Text.NoWrap
+
+        }
+
+        Label {
+            id: stats1
+            anchors.bottom: clockTile1.bottom
+            anchors.horizontalCenter: clockTile1.horizontalCenter
+            //y: (isPortrait) ? clockTile1.height - height - 0.5*(clockTile1.height - clock1.y - clock1.height) : (0.5*(clockTile1.height - clock1.height) - height)/2
+            text: ""
+            rotation: (isPortrait) ? 180 : 0
+            width: clockTile1.width
+            horizontalAlignment: Text.AlignHCenter
+        }
+
+        MouseArea {
+            id: clock1mouse
+            anchors.fill: parent
+            onClicked: {
+                console.log(" clicked " + tapToReset + " " + clockCounter.running + " " + gameOverTimer.running)
+
+                if (tapToReset)
+                    setUp()
+                else {
+                    if (clockCounter.running) {
+                        if (player1turn)
+                            changePlayer()
+                    } else {
+                        if (!gameOverTimer.running)
+                            startGame(2)
                     }
 
                 }
 
-                MouseArea {
-                    id: clock1mouse
-                    anchors.fill: parent
-                    onClicked: {
-                        if (tapToReset)
-                            setUp()
-                        else {
-                            if (clockCounter.running) {
-                                if (player1turn)
-                                    changePlayer()
-                            } else {
-                                if (!gameOverTimer.running)
-                                    startGame(2)
-                            }
-
-                        }
-
-                        if (clangAtEnd && gameOverTimer.running)
-                            alarm.stop()
-
-                    }
-
-                }
+                if (clangAtEnd && gameOverTimer.running)
+                    alarm.stop()
 
             }
 
-            Rectangle {
-                height: 1
-                width: page.width - 2*Theme.paddingLarge
-                x: Theme.paddingLarge // 0.1*page.width
+        }
+
+    }
+
+    Item { // settings
+        id: settingsTile
+        x: (page.isPortrait) ? 0 : clockTile1.width + 2*xPadding
+        y: (page.isPortrait) ? clockTile1.height + 2*yPadding : 0
+        height: (page.isPortrait) ? midSectionSize : page.height
+        width: (page.isPortrait) ? page.width : midSectionSize
+        //*
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                console.log("alue")
+                if (clangAtEnd && gameOverTimer.running)
+                    alarm.stop()
+            }
+        }// */
+
+        Rectangle {
+            id: sepa1
+            x: (page.isPortrait) ? Theme.paddingLarge : 0// 0.1*page.width
+            y: (page.isPortrait) ? 0 : Theme.paddingLarge
+            //height: (page.isPortrait) ? 1 : page.height - 2*Theme.paddingLarge
+            //width: (page.isPortrait) ? page.width - 2*Theme.paddingLarge : 1
+            width: 1
+            height: page.isPortrait ? page.width - 2*Theme.paddingLarge : page.height - 2*Theme.paddingLarge
+            rotation: page.isPortrait ? 90 : 0
+            transform: Translate {
+                x: (sepa1.rotation != 0) ? 0.5*sepa1.height : 0
+                y: (sepa1.rotation != 0) ? -0.5*sepa1.height : 0
             }
 
-            Row {
-                id: midRow
-                spacing: Theme.paddingLarge
-                //x: Theme.paddingLarge // 0.1*page.width
+            gradient: Gradient {
+                GradientStop { position: 0; color: "transparent" }
+                GradientStop { position: 0.5; color: Theme.highlightColor }
+                GradientStop { position: 1.0; color: "transparent" }
+            }
+        }
 
-                TextField {
-                        id: playTime1
-                        property int hours1: 0
-                        property int minutes1: 30
-                        property int seconds1: 0
-                        property int hours2: 0
-                        property int minutes2: 30
-                        property int seconds2: 0
+        IconButton {
+            id: settings
+            icon.source: "image://theme/icon-m-developer-mode"
+            x: (isPortrait) ? Theme.paddingLarge : 0.5*(midSectionSize - width)
+            y: (isPortrait) ? 0.5*(midSectionSize - height) : page.height - height - Theme.paddingLarge //- width //settingsTile.y + 2 : page.height
+            onClicked: {
+                if (!clockCounter.running)
+                    openSettingsDialog()
 
-                        function openSettingsDialog() {
-                            var dialog = pageStack.push(Qt.resolvedUrl("TimeSettings.qml"), {
-                                            hoursPlayer1: hours1,
-                                            minsPlayer1: minutes1,
-                                            secsPlayer1: seconds1,
-                                            bonusT1: bonus10/1000,
-                                            bonusPeriods1: bonusTimes10,
-                                            hoursPlayer2: hours2,
-                                            minsPlayer2: minutes2,
-                                            secsPlayer2: seconds2,
-                                            bonusT2: bonus20/1000,
-                                            bonusPeriods2: bonusTimes20,
-                                            bonusType: bonusType,
-                                            useSounds: clangAtEnd,
-                                            soundFile: alarmFile
-                                         })
+                if (clangAtEnd && gameOverTimer.running)
+                    alarm.stop()
 
-                            dialog.accepted.connect(function() {
-                                hours1 = dialog.hoursPlayer1
-                                minutes1 = dialog.minsPlayer1
-                                seconds1 = dialog.secsPlayer1
-                                bonus1 = dialog.bonusT1*1000
-                                bonus10 = bonus1
-                                bonusTimes10 = dialog.bonusPeriods1
-                                bonusTimes1 = bonusTimes10
-                                hours2 = dialog.hoursPlayer2
-                                minutes2 = dialog.minsPlayer2
-                                seconds2 = dialog.secsPlayer2
-                                bonus2 = dialog.bonusT2*1000
-                                bonus20 = bonus2
-                                bonusTimes20 = dialog.bonusPeriods2
-                                bonusTimes2 = bonusTimes20
-                                bonusType= dialog.bonusType
-                                clangAtEnd = dialog.useSounds
-                                alarmFile = dialog.soundFile
+            }
+        }
 
-                                time01 = ((hours1*60 + minutes1)*60 + seconds1)*1000
-                                time02 = ((hours2*60 + minutes2)*60 + seconds2)*1000
-                                time1 = time01
-                                time2 = time02
-                                setUp()
-                            })
-                        }
-
-                        width: Theme.fontSizeMedium*10
-                        text: qsTr("settings")
-                        label: clockText(time01) + ( time01 === time02 ? "" : " - " + clockText(time02))
-                        readOnly: true
-                        horizontalAlignment: TextInput.AlignHCenter
-                        onClicked: {
-                            if (!clockCounter.running)
-                                openSettingsDialog()
-
-                            if (clangAtEnd && gameOverTimer.running)
-                                alarm.stop()
-
-                        }
-                    }
-
-                    IconButton {
-                        id: pause
-                        icon.source: "image://theme/icon-l-pause"
-                        onPressAndHold: {
-                            clockCounter.stop()
-                            play.enabled = true
-
-                            if (clangAtEnd && gameOverTimer.running)
-                                alarm.stop()
-                        }
-
-                        enabled: clockCounter.running
-                    }
-
-                    IconButton {
-                        id: play
-                        icon.source: "image://theme/icon-l-play"
-                        onClicked: {
-                            if (!tapToReset) {
-                                clockCounter.start()
-                                enabled = false
-                            } else {
-                                setUp()
-                            }
-
-                            if (clangAtEnd && gameOverTimer.running)
-                                alarm.stop()
-
-                        }
-
-                        enabled: false
-                    }
-
-                }
-
-            Rectangle {
-                height: 1
-                width: page.width - 2*Theme.paddingLarge
-                x: Theme.paddingLarge
+        Label {
+            id: playTime1
+            text: clockText(time01) + ( time01 === time02 ? "" : " - " + clockText(time02))
+            x: (isPortrait) ? settings.x + settings.width : 0.5*(midSectionSize-height)
+            y: (isPortrait) ? 0.5*(midSectionSize-height) : 0.5*(settings.y + pause.y + pause.height - height)
+            width: isPortrait ? pause.x- settings.x - settings.width : settings.y - pause.y - pause.height
+            rotation: isPortrait ? 0 : -90
+            transform: Translate {
+                x: (playTime1.rotation != 0) ? -0.5*(playTime1.width - playTime1.height) : 0
+                //y: (playTime1.rotation != 0) ? -0.5*width : 0
             }
 
-            Item {
-                width: page.width
-                height: bonusClock2.height + clock2.height + stats2.height
+            color: Theme.secondaryColor
+            horizontalAlignment: TextInput.AlignHCenter
+        }
 
-                Column {
-                    spacing: 0
+        /*
+        TextField {
+            id: playTime1
+            rotation: (page.isPortrait) ? 0 : 270
+            x: (isPortrait) ? 0.5*(pause.x - width) : 2 - height // settingsTile.x + 2
+            y: (isPortrait) ? 2 : 0.5*(page.height + pause.y + pause.height - height) //- width //settingsTile.y + 2 : page.height
+            //width: Theme.fontSizeMedium*10
+            text: qsTr("settings") + " " + x + " " + y
+            label: clockText(time01) + ( time01 === time02 ? "" : " - " + clockText(time02))
+            readOnly: true
+            horizontalAlignment: TextInput.AlignHCenter
 
-                    Label {
-                        id: stats2
-                        text: " "
-                        width: page.width
-                        horizontalAlignment: Text.AlignHCenter
+            property int hours1: 0
+            property int minutes1: 30
+            property int seconds1: 0
+            property int hours2: 0
+            property int minutes2: 30
+            property int seconds2: 0
+
+            onClicked: {
+                if (!clockCounter.running)
+                    openSettingsDialog()
+
+                if (clangAtEnd && gameOverTimer.running)
+                    alarm.stop()
+
+            }
+        } // */
+
+        IconButton {
+            id: pause
+            x: (isPortrait) ? page.width - Theme.paddingLarge - 2*width - Theme.paddingMedium : 0.5*(settingsTile.width - width)
+            y: (isPortrait) ? 0.5*(settingsTile.height - height) : Theme.paddingLarge + Theme.paddingMedium + height
+            icon.source: "image://theme/icon-l-pause"
+            onPressAndHold: {
+                    clockCounter.stop()
+                    play.enabled = true
+
+                    if (clangAtEnd && gameOverTimer.running)
+                        alarm.stop()
+                }
+
+            enabled: clockCounter.running
+        }
+
+        IconButton {
+            id: play
+            x: (isPortrait) ? page.width - Theme.paddingLarge - width : 0.5*(settingsTile.width - width)
+            y: (isPortrait) ? 0.5*(settingsTile.height - height) : Theme.paddingLarge
+
+            icon.source: "image://theme/icon-l-play"
+            onClicked: {
+                if (!tapToReset) {
+                    clockCounter.start()
+                    enabled = false
+                } else {
+                    setUp()
+                }
+
+                if (clangAtEnd && gameOverTimer.running)
+                    alarm.stop()
+
+            }
+
+            enabled: false
+        }
+
+        Rectangle {
+            id: sepa2
+            x: (page.isPortrait) ? Theme.paddingLarge : midSectionSize - 1// 0.1*page.width
+            y: (page.isPortrait) ? midSectionSize - 1 : Theme.paddingLarge
+            //height: (page.isPortrait) ? 1 : page.height - 2*Theme.paddingLarge
+            //width: (page.isPortrait) ? page.width - 2*Theme.paddingLarge : 1
+            width: 1
+            height: page.isPortrait ? page.width - 2*Theme.paddingLarge : page.height - 2*Theme.paddingLarge
+            rotation: page.isPortrait ? 90 : 0
+            transform: Translate {
+                x: (sepa2.rotation != 0) ? 0.5*sepa2.height : 0
+                y: (sepa2.rotation != 0) ? -0.5*sepa2.height : 0
+            }
+
+            gradient: Gradient {
+                GradientStop { position: 0; color: "transparent" }
+                GradientStop { position: 0.5; color: Theme.highlightColor }
+                GradientStop { position: 1.0; color: "transparent" }
+            }
+        }
+
+    }
+
+    Item { // clock2
+        id: clockTile2
+        height: tileSize
+        width: height
+        x: (isPortrait) ? 0.5*(page.width - width) : (settingsTile.x + midSectionSize + xPadding)
+        y: (isPortrait) ? (settingsTile.y + midSectionSize + yPadding) : 0.5*(page.height - height)
+        //height: bonusClock2.height + clock2.height + stats2.height
+
+        Label {
+            id: stats2
+            //y: (0.5*(clockTile2.height - clock2.height) - height)/2
+            anchors.top: clockTile2.top
+            anchors.horizontalCenter: clockTile2.horizontalCenter
+            text: ""
+            width: clockTile2.width
+            horizontalAlignment: Text.AlignHCenter
+        }
+
+        Label {
+            id: clock2
+            anchors.horizontalCenter: clockTile2.horizontalCenter
+            y: 0.5*(clockTile2.height - height)
+            text: writeClock2()
+
+            font.pixelSize: 0.3*clockTile2.width
+            height: clockTile2.heigt - stats2.height - bonusClock2.height
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            width: clockTile2.width
+            wrapMode: Text.NoWrap
+
+        }
+
+        Label {
+            id: bonusClock2
+            anchors.bottom: clockTile2.bottom
+            anchors.horizontalCenter: clockTile2.horizontalCenter
+            //y: 0.5*(clockTile2.height + clock2.height) + 0.5*(clockTile2.height - clock2.y - clock2.height - height)
+            text: "" // "Extra time"
+
+            font.pixelSize: Theme.fontSizeMedium
+            //height: 0.25*clockTile2.height
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            width: clockTile2.width
+            wrapMode: Text.Wrap
+
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                if (tapToReset)
+                    setUp()
+                else {
+                    if (clockCounter.running) {
+                        if (!player1turn)
+                            changePlayer()
+                    } else {
+                        if (!gameOverTimer.running)
+                            startGame(1)
                     }
-
-                    Label {
-                        id: clock2
-                        text: writeClock2()
-
-                        font.pixelSize: 0.28*page.width
-                        height: 0.5*(Screen.height - column.spacing*4 - midRow.height - 2) - stats2.height - bonusClock2.height
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        width: page.width
-                        wrapMode: Text.Wrap
-
-                    }
-
-
-                    Label {
-                        id: bonusClock2
-                        text: "Extra time"
-
-                        font.pixelSize: Theme.fontSizeMedium
-                        height: 0
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        width: page.width
-                        wrapMode: Text.Wrap
-
-                    }
-
 
                 }
 
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        if (tapToReset)
-                            setUp()
-                        else {
-                            if (clockCounter.running) {
-                                if (!player1turn)
-                                    changePlayer()
-                            } else {
-                                if (!gameOverTimer.running)
-                                    startGame(1)
-                            }
-
-                        }
-
-                        if (clangAtEnd && gameOverTimer.running){
-                            alarm.stop()
-                        }
-
-                    }
+                if (clangAtEnd && gameOverTimer.running){
+                    alarm.stop()
                 }
-
 
             }
         }
@@ -797,4 +960,5 @@ Page {
     Component.onCompleted: {
         setUp()
     }
+
 }

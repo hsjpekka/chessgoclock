@@ -35,29 +35,30 @@ import Sailfish.Pickers 1.0
 Dialog {
 //Page {
     id: page
+    allowedOrientations: Orientation.All
     //anchors.fill: parent
 
-    property int hoursPlayer1: 0
-    property int minsPlayer1: 0
-    property int secsPlayer1: 0
+    property string ambientPath: "/usr/share/sounds/jolla-ambient/stereo/"
     property int bonusPeriods1: 0
-    property int bonusT1: 0
-    property int hoursPlayer2: 0
-    property int minsPlayer2: 0
-    property int secsPlayer2: 0
     property int bonusPeriods2: 0
+    property string bonusPeriodTxt: ""
+    property int bonusT1: 0
     property int bonusT2: 0
     property int bonusType: 0 // 0 - no bonus, 1 - secs per move (Fischer), 2 - delay before counting (Bronstein), 3 - n x XX sec ylityksiä (Byoyomi), 4 - n x siirtoja XX sekunnissa (Canadian Byo.)
-    property string bonusPeriodTxt: ""
-    property string txtPlaceHolder: ""
     property bool bonusVisible: false
     property bool equals: true
-    property int sliderWidth: page.width*0.8
-
-    property bool useSounds: false
-    property string soundFile: ambientPath + "positive_confirmation.wav" // ringtonesPath + "jolla-calendar-alarm.ogg"
+    property int hoursPlayer1: 0
+    property int hoursPlayer2: 0
+    property int minsPlayer1: 0
+    property int minsPlayer2: 0
     property string ringtonesPath: "/usr/share/sounds/jolla-ringtones/stereo/"
-    property string ambientPath: "/usr/share/sounds/jolla-ambient/stereo/"
+    //property int screenOrientation: Orientation.All
+    property int secsPlayer1: 0
+    property int secsPlayer2: 0
+    property string txtPlaceHolder: ""
+    property int sliderWidth: page.width*0.8
+    property string soundFile: ambientPath + "positive_confirmation.wav" // ringtonesPath + "jolla-calendar-alarm.ogg"
+    property bool useSounds: false
 
     SilicaFlickable {
         id: flickable
@@ -69,12 +70,38 @@ Dialog {
             id: column
             spacing: 0
 
-            // /*
             DialogHeader {
                 title: "" //qsTr("Player 1")
                 width: page.width
                 //visible: false
-            } // */
+            }
+
+            /*
+            ComboBox {
+                id: viewOrientation
+                label: qsTr("orientation")
+                currentIndex: 0
+                menu: ContextMenu {
+                    MenuItem { text: qsTr("dynamic") }
+                    MenuItem { text: qsTr("portrait") }
+                    MenuItem { text: qsTr("landscape") }
+                }
+                onCurrentIndexChanged: {
+                    switch (currentIndex) {
+                    case 0:
+                        screenOrientation = Orientation.All
+                        break
+                    case 1:
+                        screenOrientation = Orientation.PortraitMask
+                        break
+                    case 2:
+                        screenOrientation = Orientation.LandscapeMask
+                        break
+                    }
+                }
+
+            }
+            // */
 
             ComboBox {
                 id: cbBonus
@@ -282,6 +309,12 @@ Dialog {
 
             }
 
+            Label {
+                text: qsTr("version %1").arg(1.2)
+                font.pixelSize: Theme.fontSizeSmall
+                color: Theme.secondaryColor
+                x: 0.5*(page.width - width)
+            }
         }
 
         VerticalScrollDecorator {}
@@ -301,6 +334,15 @@ Dialog {
     Component.onCompleted: {
         equals = ((hoursPlayer1*60 + minsPlayer1)*60 + secsPlayer1 === (hoursPlayer2*60 + minsPlayer2)*60 + secsPlayer2) && (bonusT1 === bonusT2)
         equalTimes.checked = equals
+
+        /*
+        if (screenOrientation === Orientation.All)
+            viewOrientation.currentIndex = 0
+        else if (screenOrientation === Orientation.PortraitMask)
+            viewOrientation.currentIndex = 1
+        else if (screenOrientation === Orientation.LandscapeMask)
+            viewOrientation.currentIndex = 2
+        // */
     }
 
     onAccepted: {
