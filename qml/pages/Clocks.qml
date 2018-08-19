@@ -57,17 +57,18 @@ Page {
     property int moves1: 0
     property int moves2: 0
     property bool player1turn: true
+    property real portraitHeight: clockSize(1)
+    property real portraitWidth: clockSize(2)
     //property bool portrait: (page.orientation === Orientation.Portrait || page.orientation === Orientation.PortraitInverted) ? true : false
     property bool tapToReset: false
-    property real tileSize: clockSize()
     property int time01: 30*60*1000
     property int time02: 30*60*1000
     property int time1: time01
     property int time2: time02
     property int timeStep: 100 //ms
     //property int viewOrientation: Orientation.All
-    property real xPadding: (isPortrait) ? 0 : (page.width - clockTile1.width - clockTile2.width - midSectionSize)/4
-    property real yPadding: (isPortrait) ? (page.height - clockTile1.height - clockTile2.height - midSectionSize)/4 : 0
+    //property real xPadding: (isPortrait) ? 0 : (page.width - clockTile1.width - clockTile2.width - midSectionSize)/4
+    //property real yPadding: (isPortrait) ? (page.height - clockTile1.height - clockTile2.height - midSectionSize)/4 : 0
 
     function byoyomi() {
         var result
@@ -248,11 +249,11 @@ Page {
         return timeTxt
     }
 
-    function clockSize() {
+    function clockSize(dir) {
         var size1 = isPortrait ? page.width : page.height
         var size3 = isPortrait ? (page.height - midSectionSize)/2 : (page.width - midSectionSize)/2
         //console.log("koot " + size1 + " " + size3 + " " + page.height + " " + page.width + " " + midSectionSize)
-        return Math.min(size1,size3)
+        return (dir === 1) ? size3 : size1 //Math.min(size1,size3)
     }
 
     function gameLost(player) {
@@ -442,6 +443,9 @@ Page {
     }
 
     function setUpFontSizes() {
+        clock1.font.pixelSize= 0.3*Math.min(portraitHeight,portraitWidth)
+        clock2.font.pixelSize= 0.3*Math.min(portraitHeight,portraitWidth)
+
         if (bonusType < 1.5) {
             bonusClock1.font.pixelSize = Theme.fontSizeMedium
             bonusClock2.font.pixelSize = Theme.fontSizeMedium
@@ -449,6 +453,7 @@ Page {
             bonusClock1.font.pixelSize = Theme.fontSizeLarge
             bonusClock2.font.pixelSize = Theme.fontSizeLarge
         }
+
         return
     }
 
@@ -599,10 +604,10 @@ Page {
     Item { // clock1
         //height: bonusClock1.height + clock1.height + stats1.height
         id: clockTile1
-        height: tileSize //clockSize()
-        width: height
-        x: (isPortrait) ? 0.5*(page.width - width) : xPadding
-        y: (isPortrait) ? yPadding : 0.5*(page.height - height)
+        height: isPortrait ? portraitHeight : portraitWidth //clockSize()
+        width: isPortrait ? portraitWidth : portraitHeight
+        x: 0
+        y: 0
 
         state: isPortrait ? "vertical" : "horizontal"
         states: [
@@ -666,7 +671,7 @@ Page {
 
             text: writeClock1()
 
-            font.pixelSize: 0.3*clockTile1.width //Theme.fontSizeExtraLarge
+            font.pixelSize: 0.3*Math.min(portraitHeight,portraitWidth) //Theme.fontSizeExtraLarge
             height: clockTile1.heigt - stats1.height - bonusClock1.height
             horizontalAlignment: Text.AlignHCenter
             rotation: (isPortrait) ? 180 : 0
@@ -717,8 +722,8 @@ Page {
 
     Item { // settings
         id: settingsTile
-        x: (page.isPortrait) ? 0 : clockTile1.width + 2*xPadding
-        y: (page.isPortrait) ? clockTile1.height + 2*yPadding : 0
+        x: (page.isPortrait) ? 0 : clockTile1.width
+        y: (page.isPortrait) ? clockTile1.height : 0
         height: (page.isPortrait) ? midSectionSize : page.height
         width: (page.isPortrait) ? page.width : midSectionSize
         //*
@@ -875,10 +880,10 @@ Page {
 
     Item { // clock2
         id: clockTile2
-        height: tileSize
-        width: height
-        x: (isPortrait) ? 0.5*(page.width - width) : (settingsTile.x + midSectionSize + xPadding)
-        y: (isPortrait) ? (settingsTile.y + midSectionSize + yPadding) : 0.5*(page.height - height)
+        height: isPortrait ? portraitHeight : portraitWidth
+        width: isPortrait ? portraitWidth : portraitHeight
+        x: (isPortrait) ? 0 : (settingsTile.x + midSectionSize)
+        y: (isPortrait) ? (settingsTile.y + midSectionSize) : 0
         //height: bonusClock2.height + clock2.height + stats2.height
 
         Label {
@@ -897,7 +902,7 @@ Page {
             y: 0.5*(clockTile2.height - height)
             text: writeClock2()
 
-            font.pixelSize: 0.3*clockTile2.width
+            font.pixelSize: 0.3*Math.min(portraitHeight,portraitWidth)
             height: clockTile2.heigt - stats2.height - bonusClock2.height
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
