@@ -12,16 +12,8 @@
         <translation>kokonaisaika</translation>
     </message>
     <message>
-        <source>%1 moves in</source>
-        <translation>%1 siirtoa</translation>
-    </message>
-    <message>
         <source>moves</source>
         <translation>siirtoa</translation>
-    </message>
-    <message>
-        <source>settings</source>
-        <translation>asetukset</translation>
     </message>
     <message>
         <source>adding %1 s per move</source>
@@ -100,6 +92,10 @@
     <message>
         <source>remains silent</source>
         <translation>pysyy vaiti</translation>
+    </message>
+    <message>
+        <source>version %1</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

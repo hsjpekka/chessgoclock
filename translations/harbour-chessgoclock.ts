@@ -12,15 +12,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>%1 moves in</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>moves</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -99,6 +91,10 @@
     </message>
     <message>
         <source>remains silent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>version %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
