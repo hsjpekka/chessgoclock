@@ -40,6 +40,7 @@ ApplicationWindow
 
     initialPage: clocks
     cover: Qt.resolvedUrl("cover/CoverPage.qml")
-    allowedOrientations: Orientation.All
-    _defaultPageOrientations: Orientation.Portrait
+    //allowedOrientations: Orientation.All
+    allowedOrientations: defaultAllowedOrientations
+    //_defaultPageOrientations: Orientation.Portrait
 }

@@ -41,5 +41,6 @@ TRANSLATIONS += translations/harbour-chessgoclock-fi.ts
 DISTFILES += \
     qml/pages/Clocks.qml \
     qml/pages/TimeSettings.qml \
-    qml/utils/ScreenBlank.qml
+    qml/utils/ScreenBlank.qml \
+    qml/pages/ColorSelection.qml
 
