@@ -110,34 +110,38 @@ Dialog {
         } else {
             dum = DataB.readValue(DataB.layoutDb, setNr, DataB.keyActiveBg)
             if (dum === -1) {
-                activeBgColor = Theme.primaryColor
+                activeBgColor = transparent
                 console.log("board setup " + setNr + " activeBgColor doesn't exist")
             } else {
-                activeBgColor = dum
+                console.log("activeBgColor")
+                activeBgColor = Scripts.strToAmbienceColor(dum)
             }
 
             dum = DataB.readValue(DataB.layoutDb, setNr, DataB.keyActiveFont)
             if (dum === -1) {
-                activeTextColor = Theme.primaryColor
+                activeTextColor = Theme.highlightColor
                 console.log("board setup " + setNr + " activeTextColor doesn't exist")
             } else {
-                activeTextColor = dum
+                console.log("activeTextColor")
+                activeTextColor = Scripts.strToAmbienceColor(dum)
             }
 
             dum = DataB.readValue(DataB.layoutDb, setNr, DataB.keyPassiveBg)
             if (dum === -1) {
-                passiveBgColor = Theme.primaryColor
+                passiveBgColor = transparent
                 console.log("board setup " + setNr + " passiveBgColor doesn't exist")
             } else {
-                passiveBgColor = dum
+                console.log("passiveBgColor")
+                passiveBgColor = Scripts.strToAmbienceColor(dum)
             }
 
             dum = DataB.readValue(DataB.layoutDb, setNr, DataB.keyPassiveFont)
             if (dum === -1) {
-                passiveTextColor = Theme.primaryColor
+                passiveTextColor = Theme.secondaryHighlightColor
                 console.log("board setup " + setNr + " passiveTextColor doesn't exist")
             } else {
-                passiveTextColor = dum
+                console.log("passiveTextColor")
+                passiveTextColor = Scripts.strToAmbienceColor(dum)
             }
 
             dum = DataB.readValue(DataB.layoutDb, setNr, DataB.keySound)
@@ -353,8 +357,12 @@ Dialog {
             //else
             //    DataB.updateLayoutSet(setNr, layoutName, activeTextColor, activeBgColor,
             //                      passiveTextColor, passiveBgColor, soundFile, useSounds)
-            DataB.storeLayoutSettings(layoutName, activeTextColor, activeBgColor,
-                              passiveTextColor, passiveBgColor, soundFile, useSounds)
+            DataB.storeLayoutSettings(layoutName,
+                                      Scripts.colorToAmbienceStr(activeClockColor.color),
+                                      Scripts.colorToAmbienceStr(activeClockBox.color),
+                                      Scripts.colorToAmbienceStr(passiveClockColor.color),
+                                      Scripts.colorToAmbienceStr(passiveClockBox.color),
+                                      soundFile, useSounds)
         }
 
         return
@@ -710,7 +718,8 @@ Dialog {
                                                     } )
                         dialog.colorClicked.connect(function(color) {
                             activeClockColor.color = color
-                            pageStack.pop()
+                            //console.log("it " + color + " - " + Scripts.colorToAmbienceStr(activeTextColor))
+                            //pageStack.pop()
                         })
                     }
                 }
@@ -728,7 +737,8 @@ Dialog {
                                                     } )
                         dialog.colorClicked.connect(function(color) {
                             activeClockBox.color = color
-                            pageStack.pop()
+                            //console.log("itbg " + Scripts.colorToAmbienceStr(activeBgColor))
+                            //pageStack.pop()
                         })
                     }
                 }
@@ -770,7 +780,8 @@ Dialog {
                                                     } )
                         dialog.colorClicked.connect(function(color) {
                             passiveClockColor.color = color
-                            pageStack.pop()
+                            //console.log("ot " + Scripts.colorToAmbienceStr(passiveTextColor))
+                            //pageStack.pop()
                         })
                     }
                 }
@@ -788,7 +799,8 @@ Dialog {
                                                     } )
                         dialog.colorClicked.connect(function(color) {
                             passiveClockBox.color = color
-                            pageStack.pop()
+                            //console.log("otbg " + Scripts.colorToAmbienceStr(passiveBgColor))
+                            //pageStack.pop()
                         })
                     }
                 }

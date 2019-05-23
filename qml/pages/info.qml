@@ -5,7 +5,7 @@ Page {
     id: page
     allowedOrientations: defaultAllowedOrientations //Orientation.All // screenOrientation
 
-    property string version: "1.3"
+    property string version: "1.4"
     property bool totalTimeVisible: false
     property bool timeIncrementVisible: false
     property bool delayVisible: false
