@@ -56,8 +56,8 @@ Grid {
             width: root.width / root.columns
             color: modelData
             radius: 0.05*width
-            border.width: 1
-            border.color: (color === "transparent")? Theme.primaryColor : color
+            border.width: 2
+            border.color: (color == "transparent")? Theme.primaryColor : color
 
             MouseArea {
                 id: mouseArea

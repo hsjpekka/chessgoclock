@@ -45,6 +45,22 @@
         <source>other</source>
         <translation>muut</translation>
     </message>
+    <message>
+        <source>modify rgb-color</source>
+        <translation>muokkaa rgb-arvoja</translation>
+    </message>
+    <message>
+        <source>red</source>
+        <translation>punainen</translation>
+    </message>
+    <message>
+        <source>green</source>
+        <translation>vihreä</translation>
+    </message>
+    <message>
+        <source>blue</source>
+        <translation>sininen</translation>
+    </message>
 </context>
 <context>
     <name>CoverPage</name>
@@ -137,11 +153,11 @@
     </message>
     <message>
         <source>time periods</source>
-        <translation type="unfinished"></translation>
+        <translation>lisäjaksoja</translation>
     </message>
     <message>
         <source>%1 moves in %2 s</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 s %1 siirtoon</translation>
     </message>
 </context>
 <context>
@@ -247,7 +263,7 @@
     </message>
     <message>
         <source>Canadian byo-yomi</source>
-        <translation type="unfinished"></translation>
+        <translation>kanadalainen byo-yomi</translation>
     </message>
 </context>
 <context>
@@ -320,22 +336,6 @@
 <context>
     <name>scripts</name>
     <message>
-        <source>time increment (Fisher)</source>
-        <translation>ajan lisäys (Fisher)</translation>
-    </message>
-    <message>
-        <source>time delay (Bronstein)</source>
-        <translation>alkuviive (Bronstein)</translation>
-    </message>
-    <message>
-        <source>byo-yomi</source>
-        <translation>byo-yomi</translation>
-    </message>
-    <message>
-        <source>canadian byo-yomi</source>
-        <translation>kanadalainen byo-yomi</translation>
-    </message>
-    <message>
         <source>no extra time</source>
         <translation>ei ajan muokkausta</translation>
     </message>
@@ -361,7 +361,7 @@
     </message>
     <message>
         <source>X moves in N s (Canadian byo-yomi)</source>
-        <translation>N s X siirtoon (Canadian byo-yomi)</translation>
+        <translation>N s X siirtoon (kanadalainen byo-yomi)</translation>
     </message>
     <message>
         <source>total time</source>

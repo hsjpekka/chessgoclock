@@ -50,7 +50,7 @@ function createTable (tbl) {
 function deleteGame(setNr) {
     var ir = gameSettings.length - 1
     //console.log(" - - " + JSON.stringify(gameSettings))
-    console.log(" games " + gameSettings.length)
+    //console.log(" games " + gameSettings.length)
     while (ir >= 0) {
         if (gameSettings[ir].setNbr === setNr)
             gameSettings.splice(ir, 1)
@@ -67,7 +67,7 @@ function deleteGame(setNr) {
 function deleteLayout(setNr) {
     var ir = layoutSettings.length - 1
     //console.log(" - - " + JSON.stringify(layoutSettings))
-    console.log(" layouts " + layoutSettings.length)
+    //console.log(" layouts " + layoutSettings.length)
     while (ir >= 0) {
         if (layoutSettings[ir].setNbr === setNr)
             layoutSettings.splice(ir, 1)
@@ -308,7 +308,7 @@ function removeFromTable(tbl, setNr) {
 
 function storeGameSettings(name, gameType, time1, extra1, nr1, time2, extra2, nr2) {
     var n = whichSet(gameDb, name)
-    console.log("here game " + n)
+    //console.log("here game " + n)
 
     if (n < 0)
         newGameSet(-n, name, gameType, time1, extra1, nr1, time2, extra2, nr2)
@@ -320,7 +320,7 @@ function storeGameSettings(name, gameType, time1, extra1, nr1, time2, extra2, nr
 
 function storeLayoutSettings(name, atxt, abkg, ptxt, pbkg, alarm, useAlarm) {
     var n = whichSet(layoutDb, name)
-    console.log("here layout " + n)
+    //console.log("here layout " + n)
 
     if (n < 0)
         newLayoutSet(-n, name, atxt, abkg, ptxt, pbkg, alarm, useAlarm)
@@ -342,7 +342,7 @@ function updateGameSet(setNr, name, gameType, time1, extra1, nr1, time2, extra2,
     updateValue(gameDb, setNr, keyPl2Time, time2)
     updateValue(gameDb, setNr, keyPl2Extra, extra2)
     updateValue(gameDb, setNr, keyPl2Nbr, nr2)
-    console.log("valmis " + setNr)
+    //console.log("valmis " + setNr)
 
     return
 }
@@ -358,7 +358,7 @@ function updateLayoutSet(setNr, name, atxt, abkg, ptxt, pbkg, alarm, useAlarm) {
     updateValue(layoutDb, setNr, keyPassiveBg, pbkg)
     updateValue(layoutDb, setNr, keySound, alarm)
     updateValue(layoutDb, setNr, keyUseSound, useAlarm)
-    console.log("valmist")
+    //console.log("valmist")
 
     return
 }
@@ -394,7 +394,7 @@ function updateValue(tbl, setNr, keyword, value) {
                           "  WHERE setNbr = " + setNr + " AND key = '" + keyword + "'");
         });
     } catch (err) {
-        console.log("Error modifying asetukset-table in database: " + err);
+        console.log("Error modifying " + tbl + " -table in database: " + err);
         console.log(" " + tbl + ": " + setNr + ", " + keyword + ", " + value)
     };
 

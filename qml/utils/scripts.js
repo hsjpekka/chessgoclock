@@ -1,4 +1,128 @@
-.pragma library
+//.pragma library
+var primaryColor = "Theme.primaryColor"
+var secondaryColor = "Theme.secondaryColor"
+var highlightColor = "Theme.highlightColor"
+var secondaryHighlightColor = "Theme.secondaryHighlightColor"
+var dimmerColor = "Theme.highlightDimmerColor"
+var backgroundColor = "Theme.highlightBackgroundColor"
+var darkPrimaryColor = "Theme.darkPrimaryColor"
+var darkSecondaryColor = "Theme.darkSecondaryColor"
+var lightPrimaryColor = "Theme.lightPrimaryColor"
+var lightSecondaryColor = "Theme.lightSecondaryColor"
+//var themePrimary
+//var themeSecondary
+//var themeDimmer
+//var themeHigh
+//var theme2ndHigh
+//var themeBg
+//var themeDark
+//var theme2ndDark
+//var themeLight
+//var theme2ndLight
+//var transparent = "transparent"
+
+function isSameColor(clr1, clr2){
+    var result = false, str1 = "" + clr1 + "", str2 = "" + clr2 + "", n
+
+    n = str1.localeCompare(str2)
+    if (n === 0)
+        result = true
+
+    //console.log("?? " + str1 + " = " + str2 + "? " + n )
+    return result
+}
+
+function colorToAmbienceStr(clr) {
+    var colour
+
+    // for some colors clr == Theme.xxxColor does not work, but comparing strings works
+    if (isSameColor(clr, Theme.primaryColor))//isSameColor(clr, themePrimary))
+        colour = primaryColor
+    else if (isSameColor(clr, Theme.secondaryColor))//isSameColor(clr, themeSecondary))
+        colour = secondaryColor
+    else if (isSameColor(clr, Theme.highlightDimmerColor))//isSameColor(clr, themeDimmer)) //if (clr === themeDimmer)
+        colour = dimmerColor
+    else if (isSameColor(clr, Theme.highlightColor))//isSameColor(clr, themeHigh)) //if (clr === themeHigh)
+        colour = highlightColor
+    else if (isSameColor(clr, Theme.secondaryHighlightColor))//isSameColor(clr, theme2ndHigh)) //if (clr === theme2ndHigh)
+        colour = secondaryHighlightColor
+    else if (isSameColor(clr, Theme.highlightBackgroundColor))//isSameColor(clr, themeBg)) //if (clr === themeBg)
+        colour = backgroundColor
+    else if (isSameColor(clr, Theme.darkPrimaryColor))//isSameColor(clr, themeDark)) //if (clr === themeDark)
+        colour = darkPrimaryColor
+    else if (isSameColor(clr, Theme.darkSecondaryColor))//isSameColor(clr, theme2ndDark)) //if (clr === theme2ndDark)
+        colour = darkSecondaryColor
+    else if (isSameColor(clr, Theme.lightPrimaryColor))//isSameColor(clr, themeLight)) //if (clr === themeLight)
+        colour = lightPrimaryColor
+    else if (isSameColor(clr, Theme.lightSecondaryColor))//isSameColor(clr, theme2ndLight)) //if (clr === theme2ndLight)
+        colour = lightSecondaryColor
+    else
+        colour = clr
+
+    //console.log("colour " + colour + " " + clr)
+    return colour
+}
+
+/*
+//ei hyötyä
+function colorToAmbience(target, clr) {
+    if (isSameColor(clr, Theme.primaryColor))//isSameColor(clr, themePrimary))
+        target = Theme.primaryColor
+    else if (isSameColor(clr, Theme.secondaryColor))//isSameColor(clr, themeSecondary))
+        target = Theme.secondaryColor
+    else if (isSameColor(clr, Theme.highlightDimmerColor))//isSameColor(clr, themeDimmer)) //if (clr === themeDimmer)
+        target = Theme.highlightDimmerColor
+    else if (isSameColor(clr, Theme.highlightColor))//isSameColor(clr, themeHigh)) //if (clr === themeHigh)
+        target = Theme.highlightColor
+    else if (isSameColor(clr, Theme.secondaryHighlightColor))//isSameColor(clr, theme2ndHigh)) //if (clr === theme2ndHigh)
+        target = Theme.secondaryHighlightColor
+    else if (isSameColor(clr, Theme.highlightBackgroundColor))//isSameColor(clr, themeBg)) //if (clr === themeBg)
+        target = Theme.highlightBackgroundColor
+    else if (isSameColor(clr, Theme.darkPrimaryColor))//isSameColor(clr, themeDark)) //if (clr === themeDark)
+        target = Theme.darkPrimaryColor
+    else if (isSameColor(clr, Theme.darkSecondaryColor))//isSameColor(clr, theme2ndDark)) //if (clr === theme2ndDark)
+        target = Theme.darkSecondaryColor
+    else if (isSameColor(clr, Theme.lightPrimaryColor))//isSameColor(clr, themeLight)) //if (clr === themeLight)
+        target = Theme.lightPrimaryColor
+    else if (isSameColor(clr, Theme.lightSecondaryColor))//isSameColor(clr, theme2ndLight)) //if (clr === theme2ndLight)
+        target = Theme.lightSecondaryColor
+    else
+        target = clr
+
+    return
+}
+// */
+
+function strToAmbienceColor(clr) {
+    var colour
+
+    if (clr === primaryColor)
+        colour = Theme.primaryColor
+    else if (clr === secondaryColor)
+        colour = Theme.secondaryColor
+    else if (clr === highlightColor)
+        colour = Theme.highlightColor
+    else if (clr === secondaryHighlightColor)
+        colour = Theme.secondaryHighlightColor
+    else if (clr === dimmerColor)
+        colour = Theme.highlightDimmerColor
+    else if (clr === backgroundColor)
+        colour = Theme.highlightBackgroundColor
+    else if (clr === darkPrimaryColor)
+        colour = Theme.darkPrimaryColor
+    else if (clr === darkSecondaryColor)
+        colour = Theme.darkSecondaryColor
+    else if (clr === lightPrimaryColor)
+        colour = Theme.lightPrimaryColor
+    else if (clr === lightSecondaryColor)
+        colour = Theme.lightSecondaryColor
+    else
+        colour = clr
+
+    //console.log("str: " + clr + ", color: " + colour)
+
+    return colour
+}
 
 function timeSystemTxt(system) {
     var txt = ""

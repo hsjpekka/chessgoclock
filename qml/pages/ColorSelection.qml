@@ -43,15 +43,113 @@ Page {
     property color colour
     property alias colors: standardColors.colors
     property alias title: header.title
+    property var clrs1: ["transparent", Theme.primaryColor, Theme.secondaryColor,
+        Theme.highlightDimmerColor, Theme.highlightColor,
+        Theme.secondaryHighlightColor, Theme.highlightBackgroundColor,
+        Theme.darkPrimaryColor, Theme.darkSecondaryColor
+        ]
+    property var clrs2: ["transparent", Theme.primaryColor, Theme.secondaryColor,
+        Theme.highlightDimmerColor, Theme.highlightColor,
+        Theme.secondaryHighlightColor, Theme.highlightBackgroundColor,
+        Theme.lightPrimaryColor, Theme.lightSecondaryColor
+        ]
 
     signal colorClicked(color colour)
 
     allowedOrientations: defaultAllowedOrientations //Orientation.All
 
+    /*
+    function intToHex(nr) {
+        var hex = "", i=0, chrA = 0, strA = "A"
+        i = Math.floor(nr/16)
+        if (i < 10)
+            hex += i
+        else {
+            chrA = strA.charCodeAt(0) //65
+            hex += String.fromCharCode(chrA + i - 10)
+        }
+
+        i = nr - i*16
+        i = Math.floor(i/16)
+        if (i < 10)
+            hex += i
+        else {
+            chrA = strA.charCodeAt(0) //65
+            hex += String.fromCharCode(chrA + i - 10)
+        }
+
+        return hex
+    }
+    // */
+
+    function hexColor(r, g, b) {
+        var nr = 0, hex = "#"
+        nr = parseInt(r)
+        if (nr < 16)
+            hex += "0"
+        hex += nr.toString(16) //intToHex(nr)
+        nr = parseInt(g)
+        if (nr < 16)
+            hex += "0"
+        hex += nr.toString(16) //intToHex(nr)
+        nr = parseInt(b)
+        if (nr < 16)
+            hex += "0"
+        hex += nr.toString(16) //intToHex(nr)
+
+        return hex
+    }
+
+    /*
+    function hexToComponents(rgb) {
+        var str = "", i = 0, red = "", green = "", blue = "", opa = ""
+        str = "#" + rgb
+        i = str.length
+        blue = str.slice(i-3,i)
+        i = i - 2
+        green = str.slice(i-3,i)
+        i = i - 2
+        red = str.slice(i-3,i)
+        if (i > 2) {
+            i = i - 2
+            opa = str.slice(i-3,i)
+        }
+    } // */
+
+//    /*
+    function redComponent(rgb) {
+        var val = 0, str = "", i = 0
+        str = "#" + rgb
+        i = str.length - 4
+        str = str.slice(i - 2, i)
+        val = parseInt(str, 16)
+        console.log("rgb " + str + " red " + val)
+        return val
+    } // */
+
+    function greenComponent(rgb) {
+        var val = 0, str = "", i = 0
+        str = "#" + rgb
+        i = str.length - 2
+        str = str.slice(i - 2, i)
+        val = parseInt(str, 16)
+        console.log("rgb " + str + " green " + val)
+        return val
+    }
+
+    function blueComponent(rgb) {
+        var val = 0, str = "", i = 0
+        str = "#" + rgb
+        i = str.length
+        str = str.slice(i - 2, i)
+        val = parseInt(str, 16)
+        console.log("rgb " + str + " blue " + val)
+        return val
+    }
+
     SilicaFlickable {
         anchors.fill: parent
-        contentHeight: header.height + ambienceTxt.height + themeColors.height +
-                       colorsTxt.height + standardColors.height
+        contentHeight: blueSlider.height + blueSlider.y - header.y
 
         VerticalScrollDecorator {}
 
@@ -72,12 +170,19 @@ Page {
         ColorGrid { //ColorPicker {
             id: themeColors
             anchors.top : ambienceTxt.bottom
-            colors: ["transparent", Theme.primaryColor, Theme.secondaryColor,
-                Theme.highlightDimmerColor, Theme.highlightColor,
-                Theme.secondaryHighlightColor, Theme.highlightBackgroundColor
-                ]
+            colors: (Theme.primaryColor === Theme.darkPrimaryColor) ? clrs2 : clrs1
             columns: (Math.floor(width / Theme.itemSizeHuge) < 4) ? 4 : Math.floor(width / Theme.itemSizeHuge)
-            onColorClicked: colorDialog.colorClicked(themeColors.color)
+            onColorClicked: {
+                colorDialog.colorClicked(themeColors.color)
+                if (!modifyRgb.checked)
+                    pageStack.pop()
+                else {
+                    redSlider.value = redComponent(themeColors.color)
+                    greenSlider.value = greenComponent(themeColors.color)
+                    blueSlider.value = blueComponent(themeColors.color)
+                }
+
+            }
         }
 
         Label {
@@ -96,9 +201,83 @@ Page {
                 "#e6007c", "#e700cc", "#9d00e7", "#7b00e6", "#5d00e5", "#0077e7",
                 "#01a9e7", "#00cce7", "#00e696", "#00e600", "#99e600", "#e3e601",
                 "#e5bc00", "#e78601"]
-            onColorClicked: colorDialog.colorClicked(standardColors.color)
+            onColorClicked: {
+                colorDialog.colorClicked(standardColors.color)
+                if (!modifyRgb.checked)
+                    pageStack.pop()
+                else {
+                    redSlider.value = redComponent(standardColors.color)
+                    greenSlider.value = greenComponent(standardColors.color)
+                    blueSlider.value = blueComponent(standardColors.color)
+                }
+            }
 
         }
 
+        TextSwitch {
+            id: modifyRgb
+            checked: false
+            text: qsTr("modify rgb-color")
+            anchors.top: standardColors.bottom
+        }
+
+        Rectangle {
+            id: sliderColor
+            height: Theme.paddingLarge*2
+            width: Theme.buttonWidthMedium
+            anchors.top: modifyRgb.bottom
+            anchors.horizontalCenter: parent.horizontalCenter
+            color: Theme.darkSecondaryColor
+        }
+
+        Slider {
+            id: redSlider
+            width: parent.width
+            label: qsTr("red")
+            minimumValue: 0
+            maximumValue: 255
+            stepSize: 1
+            anchors.top: sliderColor.bottom
+            onValueChanged: {
+                sliderColor.color = hexColor(redSlider.value, greenSlider.value, blueSlider.value)
+            }
+            enabled: modifyRgb.checked
+        }
+
+        Slider {
+            id: greenSlider
+            width: parent.width
+            label: qsTr("green")
+            minimumValue: 0
+            maximumValue: 255
+            stepSize: 1
+            anchors.top: redSlider.bottom
+            onValueChanged: {
+                //console.log("green " + value)
+                sliderColor.color = hexColor(redSlider.value, greenSlider.value, blueSlider.value)
+            }
+            enabled: modifyRgb.checked
+        }
+
+        Slider {
+            id: blueSlider
+            width: parent.width
+            label: qsTr("blue")
+            minimumValue: 0
+            maximumValue: 255
+            stepSize: 1
+            anchors.top: greenSlider.bottom
+            onValueChanged: {
+                //console.log("slider3 " + hexColor(redSlider.value, greenSlider.value, blueSlider.value))
+                sliderColor.color = hexColor(redSlider.value, greenSlider.value, blueSlider.value)
+            }
+            enabled: modifyRgb.checked
+        }
+
+    }
+
+    Component.onDestruction: {
+        if (modifyRgb.checked === true)
+            colorClicked(hexColor(redSlider.value, greenSlider.value, blueSlider.value))
     }
 }

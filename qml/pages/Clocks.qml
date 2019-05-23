@@ -35,6 +35,7 @@ import QtQuick.LocalStorage 2.0
 
 import "../utils"
 import "../utils/database.js" as DataB
+import "../utils/scripts.js" as Scripts
 
 Page {
     id: page
@@ -57,6 +58,10 @@ Page {
     property color colorActiveFont: Theme.secondaryHighlightColor
     property color colorPassiveArea: "transparent"
     property color colorPassiveFont: Theme.highlightColor
+    property string clrStrAArea: "transparent"
+    property string clrStrATxt: Scripts.secondaryHighlightColor
+    property string clrStrPArea: "transparent"
+    property string clrStrPTxt: Scripts.highlightColor //in-turn area, text, out area, txt
     property int gameOverWaitTime: 5*1000
     property bool gameRunning: false
     property string gameSetupName: ""
@@ -74,6 +79,10 @@ Page {
     property int time02: 30*60*1000
     property int time1: time01 // remaining playing time
     property int time2: time02
+    property bool timeEnded: (bonusType < 1.5) ? (time1 <= 0 || time2 <=0) : (
+                                (bonusType === 4) ? (bonus1 <= 0 || bonus2 <= 0) :
+                                ( (time1 <= 0 && bonus1 <= 0 && bonusTimes1 <= 0) ||
+                                 (time2 <= 0 && bonus2 <= 0 && bonusTimes2 <= 0)) )   //( (time1 <= 0 && bonus1 <= 0 && bonusTimes1 <= 0) || (time2 <= 0 && bonus2 <= 0 && bonusTimes2 <= 0) ) ? true : false
     property int timeStep: 100 //ms
     //property int viewOrientation: Orientation.All
     //property real xPadding: (isPortrait) ? 0 : (page.width - clockTile1.width - clockTile2.width - midSectionSize)/4
@@ -165,11 +174,11 @@ Page {
     function clockFonts() {
         if (player1turn) {
             clock1.font.bold = true
-            clock1.color = colorActiveFont // Theme.secondaryHighlightColor
+            //clock1.color = colorActiveFont // Theme.secondaryHighlightColor
             clock1.style = Text.Raised
 
             clock2.font.bold = false
-            clock2.color = colorPassiveFont // Theme.highlightColor
+            //clock2.color = colorPassiveFont // Theme.highlightColor
             clock2.style = Text.Sunken
 
             if (bonusType > 2.5) {
@@ -177,7 +186,7 @@ Page {
                     //bonusClock1.height = 0.2*Screen.height
                     bonusClock1.font.pixelSize = Theme.fontSizeHuge*1.5
                     bonusClock1.font.bold = true
-                    bonusClock1.color = clock1.color
+                    //bonusClock1.color = clock1.color
                     bonusClock1.style = Text.Raised
 
                     clock1.font.pixelSize = Theme.fontSizeHuge*2
@@ -187,17 +196,17 @@ Page {
                 }
                 if (time2 < 0) {
                     bonusClock2.font.bold = false
-                    bonusClock2.color = clock2.color // Theme.highlightColor
+                    //bonusClock2.color = clock2.color // Theme.highlightColor
                     bonusClock2.style = Text.Sunken
                 }
             }
         } else {
             clock1.font.bold = false
-            clock1.color = colorPassiveFont // Theme.highlightColor
+            //clock1.color = colorPassiveFont // Theme.highlightColor
             clock1.style = Text.Sunken
 
             clock2.font.bold = true
-            clock2.color = colorActiveFont // Theme.secondaryHighlightColor
+            //clock2.color = colorActiveFont // Theme.secondaryHighlightColor
             clock2.style = Text.Raised
 
             //if(highlightBackground) {
@@ -209,7 +218,7 @@ Page {
                     //bonusClock2.height = 0.2*Screen.height
                     bonusClock2.font.pixelSize = Theme.fontSizeHuge*1.5
                     bonusClock2.font.bold = true
-                    bonusClock2.color = clock2.color
+                    //bonusClock2.color = clock2.color
                     bonusClock2.style = Text.Raised
 
                     clock2.font.pixelSize = Theme.fontSizeHuge*2
@@ -218,7 +227,7 @@ Page {
                 }
                 if (time1 < 0) {
                     bonusClock1.font.bold = false
-                    bonusClock1.color = clock1.color // Theme.highlightColor
+                    //bonusClock1.color = clock1.color // Theme.highlightColor
                     bonusClock1.style = Text.Sunken
                 }
 
@@ -227,9 +236,9 @@ Page {
 
         if (bonusType == 2) {
             bonusClock1.font.bold = clock1.font.bold
-            bonusClock1.color = clock1.color
+            //bonusClock1.color = clock1.color
             bonusClock2.font.bold = clock2.font.bold
-            bonusClock2.color = clock2.color
+            //bonusClock2.color = clock2.color
         }
 
         return
@@ -276,6 +285,21 @@ Page {
         return (dir === 1) ? size3 : size1 //Math.min(size1,size3)
     }
 
+    //ei käytössä
+    function colorTheme() {
+        Scripts.themePrimary = Theme.primaryColor
+        Scripts.themeSecondary = Theme.secondaryColor
+        Scripts.themeHigh = Theme.highlightColor
+        Scripts.theme2ndHigh = Theme.secondaryHighlightColor
+        Scripts.themeDimmer = Theme.highlightDimmerColor
+        Scripts.themeBg = Theme.highlightBackgroundColor
+        Scripts.themeDark = Theme.darkPrimaryColor
+        Scripts.theme2ndDark = Theme.darkSecondaryColor
+        Scripts.themeLight = Theme.lightPrimaryColor
+        Scripts.theme2ndLight = Theme.lightSecondaryColor
+        //console.log("opacity " + Theme.highlightBackgroundOpacity)
+    }
+
     function gameEnded() {
         showStats()
         gameRunning = false
@@ -293,15 +317,17 @@ Page {
 
         clo.text = "0.0"
         clo.style = Text.Outline
-        clo.color = Theme.primaryColor
+        //clo.color = colorActiveFont//Theme.primaryColor
 
-        loser.color = Theme.primaryColor
+        //loser.color = colorActiveFont //Theme.primaryColor
 
         showStats()
         //gameEnded()
 
         if (clangAtEnd)
             alarm.play()
+
+        //console.log("" + timeEnded + ", " + time1 + ", " + bonus1 + ", " + bonusTimes1  + ", " + time2 + ", " + bonus2 + ", " + bonusTimes2)
 
         return
     }
@@ -366,14 +392,25 @@ Page {
                 time02 = 1
             time2 = time02
 
+            if (bonusType === 0) {
+                bonus1 = 0
+                bonus10 = 0
+                bonus2 = 0
+                bonus20 = 0
+            }
+            if (bonusType < 2.5) {
+                bonusTimes1 = 0
+                bonusTimes10 = 0
+                bonusTimes2 = 0
+                bonusTimes20 = 0
+            }
+
+
             boardLayoutName = dialog.layoutName
             clangAtEnd = dialog.useSounds
             alarmFile = dialog.soundFile
 
-            colorActiveFont = dialog.activeTextColor
-            colorActiveArea = dialog.activeBgColor
-            colorPassiveFont = dialog.passiveTextColor
-            colorPassiveArea = dialog.passiveBgColor
+            setColors(dialog.activeBgColor, dialog.activeTextColor, dialog.passiveBgColor, dialog.passiveTextColor)
 
             //viewOrientation = dialog.screenOrientation
             clockFonts()
@@ -389,22 +426,32 @@ Page {
     }
 
     function readBoardSettings(setupNr) {
+        var dum
         DataB.createTable(DataB.layoutDb)
-        //console.log("read board " + setupNr)
+
         if (DataB.readTable(DataB.layoutDb) === 0) {
-            // alusta taulukko
-            console.log("layoutDb 0 riviä")
+            console.log("layoutDb 0 rows")
             DataB.newLayoutSet(0, DataB.lastUsed, colorActiveFont, colorActiveArea,
                              colorPassiveFont, colorPassiveArea, alarmFile, clangAtEnd)
         } else {
-            colorActiveArea = DataB.readValue(DataB.layoutDb, setupNr, DataB.keyActiveBg)
-            colorActiveFont = DataB.readValue(DataB.layoutDb, setupNr, DataB.keyActiveFont)
-            colorPassiveArea = DataB.readValue(DataB.layoutDb, setupNr, DataB.keyPassiveBg)
-            colorPassiveFont = DataB.readValue(DataB.layoutDb, setupNr, DataB.keyPassiveFont)
+            dum = DataB.readValue(DataB.layoutDb, setupNr, DataB.keyActiveBg)
+            clrStrAArea = dum
+            colorActiveArea = Scripts.strToAmbienceColor(dum)
+            //Scripts.strToAmbienceColor(colorActiveArea, dum)
+            dum = DataB.readValue(DataB.layoutDb, setupNr, DataB.keyActiveFont)
+            clrStrATxt = dum
+            colorActiveFont = Scripts.strToAmbienceColor(dum)
+            //Scripts.strToAmbienceColor(colorActiveFont, dum)
+            dum = DataB.readValue(DataB.layoutDb, setupNr, DataB.keyPassiveBg)
+            clrStrPArea = dum
+            colorPassiveArea = Scripts.strToAmbienceColor(dum)
+            //Scripts.strToAmbienceColor(colorPassiveArea, dum)
+            dum = DataB.readValue(DataB.layoutDb, setupNr, DataB.keyPassiveFont)
+            clrStrPTxt = dum
+            colorPassiveFont = Scripts.strToAmbienceColor(dum)
+            //Scripts.strToAmbienceColor(colorPassiveFont, dum)
             alarmFile = DataB.readValue(DataB.layoutDb, setupNr, DataB.keySound)
             clangAtEnd = DataB.readValue(DataB.layoutDb, setupNr, DataB.keyUseSound)
-
-            //console.log("näyttö " + DataB.readValue(DataB.layoutDb, setupNr, DataB.keyName) + " alue " + colorActiveArea + ", teksti " + colorActiveFont)
         }
 
         return
@@ -424,7 +471,6 @@ Page {
             time1 = time01
             time02 = DataB.readValue(DataB.gameDb, setupNr, DataB.keyPl2Time)*second
             time2 = time02
-            bonusType = DataB.readValue(DataB.gameDb, setupNr, DataB.keyGame)
             bonus10 = DataB.readValue(DataB.gameDb, setupNr, DataB.keyPl1Extra)*second
             bonus1 = bonus10
             bonus20 = DataB.readValue(DataB.gameDb, setupNr, DataB.keyPl2Extra)*second
@@ -433,6 +479,20 @@ Page {
             bonusTimes1 = bonusTimes10
             bonusTimes20 = DataB.readValue(DataB.gameDb, setupNr, DataB.keyPl2Nbr)
             bonusTimes2 = bonusTimes20
+
+            bonusType = DataB.readValue(DataB.gameDb, setupNr, DataB.keyGame)
+            if (bonusType === 0) {
+                bonus1 = 0
+                bonus10 = 0
+                bonus2 = 0
+                bonus20 = 0
+            }
+            if (bonusType < 2.5) {
+                bonusTimes1 = 0
+                bonusTimes10 = 0
+                bonusTimes2 = 0
+                bonusTimes20 = 0
+            }
 
             //console.log("peli " + bonusType + ", " + DataB.readValue(DataB.gameDb, setupNr, DataB.keyName) +
             //            ", t1 " + time1/1000 + ", t2 " + time2/1000)
@@ -451,6 +511,32 @@ Page {
 
     }
 
+    function refreshColors() {
+        colorActiveArea = Scripts.strToAmbienceColor(clrStrAArea)
+        colorActiveFont = Scripts.strToAmbienceColor(clrStrATxt)
+        colorPassiveArea = Scripts.strToAmbienceColor(clrStrPArea)
+        colorPassiveFont = Scripts.strToAmbienceColor(clrStrPTxt)
+        //console.log("in txt: " + colorActiveFont + ", bg: " + colorActiveArea + ", out txt: " + colorPassiveFont + ", bg: " + colorPassiveArea)
+        //console.log(" dimmer " + Theme.highlightDimmerColor + ", 2nd " + Theme.secondaryColor + ", highBgC " + Theme.highlightBackgroundColor)
+        //console.log("strTxt: " + clrStrATxt + ", bg: " + clrStrAArea + ", out txt: " + clrStrPTxt + ", bg: " + clrStrPArea)
+
+        return
+    }
+
+    function setColors(actBg, actTxt, pasBg, pasTxt) {
+        colorActiveFont = actTxt //Scripts.colorToAmbience(colorActiveFont, dialog.activeTextColor)//
+        colorActiveArea = actBg //Scripts.colorToAmbience(colorActiveArea, dialog.activeBgColor)//
+        colorPassiveFont = pasTxt //Scripts.colorToAmbience(colorPassiveFont, dialog.passiveTextColor)//
+        colorPassiveArea = pasBg //Scripts.colorToAmbience(colorPassiveArea, dialog.passiveBgColor)//
+
+        clrStrAArea = Scripts.colorToAmbienceStr(actBg)
+        clrStrATxt = Scripts.colorToAmbienceStr(actTxt)
+        clrStrPArea = Scripts.colorToAmbienceStr(pasBg)
+        clrStrPTxt = Scripts.colorToAmbienceStr(pasTxt)
+
+        return
+    }
+
     function setUp() {
         tapToReset = false
 
@@ -465,14 +551,14 @@ Page {
         bonusTimes1 = bonusTimes10
         bonusClock1.visible = true
         bonusClock1.font.bold = false
-        bonusClock1.color = Theme.primaryColor
+        //bonusClock1.color = colorPassiveFont
         bonusClock1.style = Text.Normal
 
         bonus2 = bonus20
         bonusTimes2 = bonusTimes20
         bonusClock2.visible = true
         bonusClock2.font.bold = false
-        bonusClock2.color = Theme.primaryColor
+        //bonusClock2.color = Theme.primaryColor
         bonusClock2.style = Text.Normal
 
         setUpFontSizes()
@@ -506,14 +592,14 @@ Page {
             //bonusClock2.height = 0.2*Screen.height
         }
 
-        clock1.color = Theme.highlightColor
+        //clock1.color = colorPassiveFont//Theme.highlightColor
         clock1.font.bold = false
         clock1.font.overline = false
         clock1.style = Text.Raised
         //clock1.height = 0.5*(Screen.height - column.spacing*4 - midRow.height - 2)  - stats1.height - bonusClock1.height
         writeClock1()
 
-        clock2.color = Theme.highlightColor
+        //clock2.color = colorPassiveFont//Theme.highlightColor
         clock2.font.bold = false
         clock2.font.overline = false
         clock2.style = Text.Raised
@@ -532,10 +618,10 @@ Page {
     }
 
     function setUpFontSizes() {
-        console.log("clocks " + clock1.font.pixelSize + ", " + clock2.font.pixelSize)
+        //console.log("clocks " + clock1.font.pixelSize + ", " + clock2.font.pixelSize)
         clock1.font.pixelSize= 0.3*Math.min(portraitHeight,portraitWidth)
         clock2.font.pixelSize= 0.3*Math.min(portraitHeight,portraitWidth)
-        console.log("clocks " + clock1.font.pixelSize + ", " + clock2.font.pixelSize)
+        //console.log("clocks " + clock1.font.pixelSize + ", " + clock2.font.pixelSize)
 
         if (bonusType < 1.5) {
             bonusClock1.font.pixelSize = Theme.fontSizeMedium
@@ -775,7 +861,7 @@ Page {
 
         Rectangle {
             anchors.fill: parent
-            color: (player1turn && gameRunning)? colorActiveArea : colorPassiveArea
+            color: ( (player1turn && gameRunning) || timeEnded )? colorActiveArea : colorPassiveArea
         }
 
         Label {
@@ -794,6 +880,7 @@ Page {
             verticalAlignment: Text.AlignVCenter
             width: clockTile1.width
             wrapMode: Text.Wrap
+            color: clock1.color
 
         }
 
@@ -804,6 +891,7 @@ Page {
             y: 0.5*(clockTile1.height - height)
 
             text: writeClock1()
+            color: ( (player1turn && gameRunning) || timeEnded )? colorActiveFont : colorPassiveFont
 
             font.pixelSize: 0.3*Math.min(portraitHeight,portraitWidth) //Theme.fontSizeExtraLarge
             height: clockTile1.heigt - stats1.height - bonusClock1.height
@@ -825,13 +913,16 @@ Page {
             rotation: (isPortrait) ? 180 : 0
             width: clockTile1.width
             horizontalAlignment: Text.AlignHCenter
-            color: Theme.secondaryColor
+            color: clock1.color
             visible: !clockCounter.running
         }
 
         MouseArea {
             id: clock1mouse
-            anchors.fill: parent
+            anchors {
+                fill: parent
+                margins: Theme.paddingSmall
+            }
             onClicked: {
                 //console.log(" clicked " + tapToReset + " " + clockCounter.running + " " + gameOverTimer.running)
 
@@ -1013,7 +1104,7 @@ Page {
 
         Rectangle {
             anchors.fill: parent
-            color: (!player1turn && gameRunning)? colorActiveArea : colorPassiveArea
+            color: ( (!player1turn && gameRunning) || timeEnded )? colorActiveArea : colorPassiveArea
         }
 
         Label {
@@ -1024,7 +1115,7 @@ Page {
             text: qsTr("total time") + " " + clockText(gameTime2) + ", " + moves2 + " " + qsTr("moves")
             width: clockTile2.width
             horizontalAlignment: Text.AlignHCenter
-            color: Theme.secondaryColor
+            color: clock2.color
             visible: !clockCounter.running
         }
 
@@ -1033,6 +1124,7 @@ Page {
             anchors.horizontalCenter: clockTile2.horizontalCenter
             y: 0.5*(clockTile2.height - height)
             text: writeClock2()
+            color: ( (!player1turn && gameRunning) || timeEnded )? colorActiveFont : colorPassiveFont
 
             font.pixelSize: 0.3*Math.min(portraitHeight,portraitWidth)
             height: clockTile2.heigt - stats2.height - bonusClock2.height
@@ -1048,12 +1140,13 @@ Page {
             anchors.bottom: clockTile2.bottom
             anchors.horizontalCenter: clockTile2.horizontalCenter
             text: "" // "Extra time"
+            color: clock2.color
 
             font.pixelSize: Theme.fontSizeMedium
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             width: clockTile2.width
-            wrapMode: Text.Wrap
+            wrapMode: Text.Wrap            
 
         }
 
@@ -1085,6 +1178,126 @@ Page {
 
     }
 
+    Text {
+        id: prClr
+        anchors.top: parent.top
+        anchors.left: parent.left
+        text: ""
+        color: Theme.primaryColor
+        onColorChanged:{
+            //console.log("=== priClr === " + color + ", " + Theme.primaryColor)
+            refreshColors()
+        }
+    }
+
+    Text {
+        id: sdClr
+        anchors.top: prClr.top
+        anchors.left: prClr.right
+        text: ""
+        color: Theme.secondaryColor
+        onColorChanged:{
+            //console.log("=== 2ndClr === " + color + ", " + Theme.secondaryColor)
+            refreshColors()
+        }
+    }
+
+    Text {
+        id: hlClr
+        anchors.top: prClr.top
+        anchors.left: sdClr.right
+        text: ""
+        color: Theme.highlightColor
+        onColorChanged:{
+            //console.log("=== hlClr === " + color + ", " + Theme.highlightColor)
+            refreshColors()
+        }
+    }
+
+    Text {
+        id: shClr
+        anchors.top: prClr.top
+        anchors.left: hlClr.right
+        text: ""
+        color: Theme.secondaryHighlightColor
+        onColorChanged:{
+            //console.log("=== shClr === " + color + ", " + Theme.secondaryHighlightColor)
+            refreshColors()
+        }
+    }
+
+    Text {
+        id: diClr
+        anchors.top: prClr.top
+        anchors.left: shClr.right
+        text: ""
+        color: Theme.highlightDimmerColor
+        onColorChanged:{
+            //console.log("=== diClr === " + color + ", " + Theme.highlightDimmerColor)
+            refreshColors()
+        }
+    }
+
+    Text {
+        id: hbClr
+        anchors.top: prClr.top
+        anchors.left: diClr.right
+        text: ""
+        color: Theme.highlightBackgroundColor
+        onColorChanged:{
+            //console.log("=== hbClr === " + color + ", " + Theme.highlightBackgroundColor)
+            refreshColors()
+        }
+    }
+
+    Text {
+        id: dpClr
+        anchors.top: prClr.top
+        anchors.left: hbClr.right
+        text: ""
+        color: Theme.darkPrimaryColor
+        onColorChanged:{
+            //console.log("=== dpClr === " + color + ", " + Theme.darkPrimaryColor)
+            refreshColors()
+        }
+    }
+
+    Text {
+        id: dsClr
+        anchors.top: prClr.top
+        anchors.left: dpClr.right
+        text: ""
+        color: Theme.darkSecondaryColor
+        onColorChanged:{
+            //console.log("=== dsClr === " + color + ", " + Theme.darkSecondaryColor)
+            refreshColors()
+        }
+    }
+
+    Text {
+        id: lpClr
+        anchors.top: hbClr.top
+        anchors.left: dsClr.right
+        text: ""
+        color: Theme.lightPrimaryColor
+        onColorChanged:{
+            //console.log("=== lpClr === " + color + ", " + Theme.lightPrimaryColor)
+            refreshColors()
+        }
+    }
+
+    Text {
+        id: lsClr
+        anchors.top: hbClr.top
+        anchors.left: lpClr.right
+        text: ""
+        color: Theme.lightSecondaryColor
+        onColorChanged:{
+            //console.log("=== lsClr === " + color + ", " + Theme.lightSecondaryColor)
+            refreshColors()
+        }
+    }
+
     ScreenBlank { //prevents screen from locking and turning off
         id: unblankScreen
         enabled: clockCounter.running
@@ -1096,6 +1309,8 @@ Page {
     }
 
     Component.onCompleted: {
+        //colorTheme()
+        //console.log("Clocks completing")
         readDb()
         setUp()
     }
