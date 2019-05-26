@@ -123,7 +123,7 @@ Page {
         i = str.length - 4
         str = str.slice(i - 2, i)
         val = parseInt(str, 16)
-        console.log("rgb " + str + " red " + val)
+        //console.log("rgb " + str + " red " + val)
         return val
     } // */
 
@@ -133,7 +133,7 @@ Page {
         i = str.length - 2
         str = str.slice(i - 2, i)
         val = parseInt(str, 16)
-        console.log("rgb " + str + " green " + val)
+        //console.log("rgb " + str + " green " + val)
         return val
     }
 
@@ -143,7 +143,7 @@ Page {
         i = str.length
         str = str.slice(i - 2, i)
         val = parseInt(str, 16)
-        console.log("rgb " + str + " blue " + val)
+        //console.log("rgb " + str + " blue " + val)
         return val
     }
 

@@ -67,6 +67,7 @@ Page {
     property string gameSetupName: ""
     property int gameTime1 // total used time
     property int gameTime2
+    property int hourMs: 60*60*1000 // ms
     property real midSectionSize: pause.height + 2*Theme.paddingSmall
     property int moves1: 0
     property int moves2: 0
@@ -84,6 +85,8 @@ Page {
                                 ( (time1 <= 0 && bonus1 <= 0 && bonusTimes1 <= 0) ||
                                  (time2 <= 0 && bonus2 <= 0 && bonusTimes2 <= 0)) )   //( (time1 <= 0 && bonus1 <= 0 && bonusTimes1 <= 0) || (time2 <= 0 && bonus2 <= 0 && bonusTimes2 <= 0) ) ? true : false
     property int timeStep: 100 //ms
+    property int turnChangeHours: 0 // qml int is not large enough for Date().getTime()
+    property int turnChangeMs: 0 // remains of the getTime()
     //property int viewOrientation: Orientation.All
     //property real xPadding: (isPortrait) ? 0 : (page.width - clockTile1.width - clockTile2.width - midSectionSize)/4
     //property real yPadding: (isPortrait) ? (page.height - clockTile1.height - clockTile2.height - midSectionSize)/4 : 0
@@ -137,6 +140,19 @@ Page {
     }
 
     function changePlayer() {
+        var changeTime = new Date().getTime(), usedMs
+        var dt
+
+        usedMs = changeTime - turnChangeHours*hourMs - turnChangeMs
+        dt = usedMs - Math.floor(usedMs/timeStep)*timeStep // time since the last trigger
+
+        turnChangeHours = Math.floor(changeTime/hourMs)
+        turnChangeMs = changeTime - turnChangeHours*hourMs
+
+        if (player1turn)
+            updateClock1(dt)
+        else
+            updateClock2(dt)
 
         if (bonusType == 1) {
             if (player1turn)
@@ -252,6 +268,8 @@ Page {
 
         if (ms < 0) {
             timeTxt = "00:00"
+        } else if (ms < 1000) {
+            timeTxt = "0." + Math.floor(ms/100)
         } else {
             if (hours > 0) {
                 if (hours < 10)
@@ -285,7 +303,7 @@ Page {
         return (dir === 1) ? size3 : size1 //Math.min(size1,size3)
     }
 
-    //ei käytössä
+    /*//ei käytössä
     function colorTheme() {
         Scripts.themePrimary = Theme.primaryColor
         Scripts.themeSecondary = Theme.secondaryColor
@@ -299,6 +317,7 @@ Page {
         Scripts.theme2ndLight = Theme.lightSecondaryColor
         //console.log("opacity " + Theme.highlightBackgroundOpacity)
     }
+    */
 
     function gameEnded() {
         showStats()
@@ -312,10 +331,11 @@ Page {
         var clo = player1turn ? clock1 : clock2
         var loser = player1turn ? bonusClock1 : bonusClock2
 
-        clockCounter.running = false
+        clockCounter1.running = false
+        clockCounter2.running = false
         gameRunning = false
 
-        clo.text = "0.0"
+        clo.text = "-.-"
         clo.style = Text.Outline
         //clo.color = colorActiveFont//Theme.primaryColor
 
@@ -365,6 +385,7 @@ Page {
 
         dialog.accepted.connect(function() {
             var sec = 1000
+            gameRunning = false
             bonusType = dialog.timeSystem
             gameSetupName = dialog.gameSetupName
 
@@ -516,9 +537,6 @@ Page {
         colorActiveFont = Scripts.strToAmbienceColor(clrStrATxt)
         colorPassiveArea = Scripts.strToAmbienceColor(clrStrPArea)
         colorPassiveFont = Scripts.strToAmbienceColor(clrStrPTxt)
-        //console.log("in txt: " + colorActiveFont + ", bg: " + colorActiveArea + ", out txt: " + colorPassiveFont + ", bg: " + colorPassiveArea)
-        //console.log(" dimmer " + Theme.highlightDimmerColor + ", 2nd " + Theme.secondaryColor + ", highBgC " + Theme.highlightBackgroundColor)
-        //console.log("strTxt: " + clrStrATxt + ", bg: " + clrStrAArea + ", out txt: " + clrStrPTxt + ", bg: " + clrStrPArea)
 
         return
     }
@@ -642,16 +660,24 @@ Page {
     }
 
     function startGame(player) {
-        if ((clockCounter.running == false) && (time1 > 0) && (time2 > 0)) {
+        var startingTime = new Date().getTime()
+        turnChangeHours = Math.floor(startingTime/hourMs)
+        turnChangeMs = startingTime - turnChangeHours*hourMs
+
+        if ((clockCounter1.running == false) && (clockCounter2.running == false) &&
+                (time1 > 0) && (time2 > 0)) {
             clock1.text = clockText(time1)
             clock2.text = clockText(time2)
-            if (player == 1)
+            if (player == 1) {
                 player1turn = true
-            else
+                clockCounter1.start()
+            }
+            else {
                 player1turn = false
+                clockCounter2.start()
+            }
 
             clockFonts()
-            clockCounter.start()
 
             play.enabled = false
 
@@ -672,65 +698,156 @@ Page {
     }
     // */
 
-    function updateClock1() {
-        var result                
+    function updateClock1(dt) {
+        var result
 
+        gameTime1 += dt //timeStep
+
+        result = updateGameTime(dt)
+
+        if (result <= 0) {
+            writeExtraTime()
+            gameLost(1)
+
+            gameOverTimer.start()
+        } else {
+            writeExtraTime()
+            writeClock1()
+        }
+
+        return
+        /*
         if (bonusType < 1.5) {
-            time1 -= timeStep
+            time1 -= dt //timeStep
             result = time1
         } else if (bonusType < 2.5) {
             if (bonus1 > 0)
-                bonus1 -= timeStep
+                bonus1 -= dt //timeStep
             else
-                time1 -= timeStep
+                time1 -= dt //timeStep
             result = time1
         } else {
             time1 -= timeStep
             result = time1 + 0.2
             if (time1 < 0) {
-                if (time1 > -1.5*timeStep)
+                if (time1 > -1.5*dt) //timeStep
                     clockFonts()
-                bonus1 -= timeStep
+                bonus1 -= dt //timeStep
                 if (bonusType < 3.5)
-                    result = byoyomi()
+                    result = byoyomi(dt)
                 else
                     result = bonus1
             }
 
         }
 
-        gameTime1 += timeStep
+        gameTime1 += dt //timeStep
         return result
+        // */
     }
 
-    function updateClock2() {
+    function updateClock2(dt) {
         var result
 
+        gameTime2 += dt //timeStep
+
+        result = updateGameTime(dt)
+
+        if (result <= 0) {
+            writeExtraTime()
+            gameLost(2)
+
+            gameOverTimer.start()
+        } else {
+            writeExtraTime()
+            writeClock2()
+        }
+
+        return
+        /*
         if (bonusType < 1.5) {
-            time2 -= timeStep
+            time2 -= dt //timeStep
             result = time2
         } else if (bonusType < 2.5) {
             if (bonus2 > 0)
-                bonus2 -= timeStep
+                bonus2 -= dt //timeStep
             else
-                time2 -= timeStep
+                time2 -= dt //timeStep
             result = time2
         } else {
-            time2 -= timeStep
+            time2 -= dt //timeStep
             result = time2 + 0.2
             if (time2 < 0) {
-                if (time2 > -1.5*timeStep)
+                if (time2 > -1.5*dt) //timeStep
                     clockFonts()
-                bonus2 -= timeStep
+                bonus2 -= dt //timeStep
                 if (bonusType < 3.5)
-                    result = byoyomi()
+                    result = byoyomi(dt)
                 else
                     result = bonus2
             }
 
         }
 
-        gameTime2 += timeStep
+        gameTime2 += dt //timeStep
+        return result
+        // */
+    }
+
+    function updateGameTime(dt) {
+        var result = 0
+        if (bonusType < 1.5) {
+            if (player1turn) {
+                time1 -= dt //timeStep
+                result = time1
+            }
+            else {
+                time2 -= dt
+                result = time2
+            }
+        } else if (bonusType < 2.5) {
+            if (player1turn) {
+                if (bonus1 > 0)
+                    bonus1 -= dt //timeStep
+                else
+                    time1 -= dt //timeStep
+                result = time1
+            } else {
+                if (bonus2 > 0)
+                    bonus2 -= dt //timeStep
+                else
+                    time2 -= dt //timeStep
+                result = time2
+            }
+
+        } else {
+            if (player1turn) {
+                time1 -= timeStep
+                result = time1 + 1.5*timeStep // avoids problems related to time = 0 & bonustimes > 0
+                if (time1 < 0) {
+                    if (time1 > -1.5*dt) // change fonts once during a game
+                        clockFonts()
+                    bonus1 -= dt //timeStep
+                    if (bonusType < 3.5)
+                        result = byoyomi(dt)
+                    else
+                        result = bonus1
+                }
+            } else {
+                time2 -= timeStep
+                result = time2 + 1.5*timeStep
+                if (time2 < 0) {
+                    if (time2 > -1.5*dt) //timeStep
+                        clockFonts()
+                    bonus2 -= dt //timeStep
+                    if (bonusType < 3.5)
+                        result = byoyomi(dt)
+                    else
+                        result = bonus2
+                }
+            }
+        }
+
         return result
     }
 
@@ -776,13 +893,15 @@ Page {
     }
 
     Timer {
-        id: clockCounter
+        id: clockCounter1
         interval: timeStep
         running: false
         repeat: true
         onTriggered: {
             if (player1turn) {
-                if (updateClock1() <= 0) {
+                updateClock1(timeStep)
+                /*
+                if (updateClock1(timeStep) <= 0) {
                     writeExtraTime()
                     gameLost(1)
 
@@ -790,9 +909,21 @@ Page {
                 } else {
                     writeExtraTime()
                     writeClock1()
-                }
-            } else {
-                if (updateClock2() <= 0) {
+                } // */
+            }
+        }
+    }
+
+    Timer {
+        id: clockCounter2
+        interval: timeStep
+        running: false
+        repeat: true
+        onTriggered: {
+            if (!player1turn) {
+                updateClock2(timeStep)
+                /*
+                if (updateClock2(timeStep) <= 0) {
                     writeExtraTime()
                     gameLost(2)
 
@@ -800,7 +931,7 @@ Page {
                 } else {
                     writeExtraTime()
                     writeClock2()
-                }
+                } // */
             }
         }
     }
@@ -914,7 +1045,7 @@ Page {
             width: clockTile1.width
             horizontalAlignment: Text.AlignHCenter
             color: clock1.color
-            visible: !clockCounter.running
+            visible: !(clockCounter1.running || clockCounter2.running)
         }
 
         MouseArea {
@@ -932,7 +1063,8 @@ Page {
                     //if (clockCounter.running) {
                     if (gameRunning) {
                         if (player1turn){
-                            clockCounter.start()
+                            clockCounter2.start()
+                            clockCounter1.stop()
                             changePlayer()
                         }
                     } else {
@@ -992,7 +1124,7 @@ Page {
             y: (isPortrait) ? 0.5*(midSectionSize - height) : page.height - height - Theme.paddingLarge //- width //settingsTile.y + 2 : page.height
 
             onClicked: {
-                if (!clockCounter.running)
+                if (!(clockCounter1.running || clockCounter2.running))
                     openSettingsDialog()
 
                 if (clangAtEnd && gameOverTimer.running)
@@ -1012,7 +1144,7 @@ Page {
                 //})
             }
 
-            enabled: !clockCounter.running //&& gameRunning
+            enabled: !(clockCounter1.running || clockCounter2.running) //&& gameRunning
         }
 
         Label {
@@ -1037,7 +1169,8 @@ Page {
             y: (isPortrait) ? 0.5*(settingsTile.height - height) : play.y + play.height + Theme.paddingMedium
             icon.source: "image://theme/icon-l-pause"
             onPressAndHold: {
-                clockCounter.stop()
+                clockCounter1.stop()
+                clockCounter2.stop()
                 play.enabled = true
 
                 if (clangAtEnd && gameOverTimer.running)
@@ -1046,7 +1179,7 @@ Page {
                 showStats()
             }
 
-            enabled: clockCounter.running
+            enabled: (clockCounter1.running || clockCounter2.running)
         }
 
         IconButton {
@@ -1057,7 +1190,10 @@ Page {
             icon.source: "image://theme/icon-l-play"
             onClicked: {
                 if (!tapToReset) {
-                    clockCounter.start()
+                    if (player1turn)
+                        clockCounter1.start()
+                    else
+                        clockCounter2.start()
                     enabled = false
                     gameRunning = true
                 } else {
@@ -1116,7 +1252,7 @@ Page {
             width: clockTile2.width
             horizontalAlignment: Text.AlignHCenter
             color: clock2.color
-            visible: !clockCounter.running
+            visible: !(clockCounter1.running || clockCounter2.running)
         }
 
         Label {
@@ -1159,7 +1295,8 @@ Page {
                     //if (clockCounter.running) {
                     if (gameRunning) {
                         if (!player1turn){
-                            clockCounter.start()
+                            clockCounter1.start()
+                            clockCounter2.stop()
                             changePlayer()
                         }
                     } else {
@@ -1178,129 +1315,138 @@ Page {
 
     }
 
-    Text {
-        id: prClr
+    Item { // reacts to Ambience changes during game
+        id: ambienceColors
         anchors.top: parent.top
         anchors.left: parent.left
-        text: ""
-        color: Theme.primaryColor
-        onColorChanged:{
-            //console.log("=== priClr === " + color + ", " + Theme.primaryColor)
-            refreshColors()
-        }
-    }
+        height: prClr.height
+        width: parent.width
 
-    Text {
-        id: sdClr
-        anchors.top: prClr.top
-        anchors.left: prClr.right
-        text: ""
-        color: Theme.secondaryColor
-        onColorChanged:{
-            //console.log("=== 2ndClr === " + color + ", " + Theme.secondaryColor)
-            refreshColors()
+        Text {
+            id: prClr
+            anchors.top: parent.top
+            anchors.left: parent.left
+            text: ""
+            color: Theme.primaryColor
+            onColorChanged:{
+                //console.log("=== priClr === " + color + ", " + Theme.primaryColor)
+                refreshColors()
+            }
         }
-    }
 
-    Text {
-        id: hlClr
-        anchors.top: prClr.top
-        anchors.left: sdClr.right
-        text: ""
-        color: Theme.highlightColor
-        onColorChanged:{
-            //console.log("=== hlClr === " + color + ", " + Theme.highlightColor)
-            refreshColors()
+        Text {
+            id: sdClr
+            anchors.top: prClr.top
+            anchors.left: prClr.right
+            text: ""
+            color: Theme.secondaryColor
+            onColorChanged:{
+                //console.log("=== 2ndClr === " + color + ", " + Theme.secondaryColor)
+                refreshColors()
+            }
         }
-    }
 
-    Text {
-        id: shClr
-        anchors.top: prClr.top
-        anchors.left: hlClr.right
-        text: ""
-        color: Theme.secondaryHighlightColor
-        onColorChanged:{
-            //console.log("=== shClr === " + color + ", " + Theme.secondaryHighlightColor)
-            refreshColors()
+        Text {
+            id: hlClr
+            anchors.top: prClr.top
+            anchors.left: sdClr.right
+            text: ""
+            color: Theme.highlightColor
+            onColorChanged:{
+                //console.log("=== hlClr === " + color + ", " + Theme.highlightColor)
+                refreshColors()
+            }
         }
-    }
 
-    Text {
-        id: diClr
-        anchors.top: prClr.top
-        anchors.left: shClr.right
-        text: ""
-        color: Theme.highlightDimmerColor
-        onColorChanged:{
-            //console.log("=== diClr === " + color + ", " + Theme.highlightDimmerColor)
-            refreshColors()
+        Text {
+            id: shClr
+            anchors.top: prClr.top
+            anchors.left: hlClr.right
+            text: ""
+            color: Theme.secondaryHighlightColor
+            onColorChanged:{
+                //console.log("=== shClr === " + color + ", " + Theme.secondaryHighlightColor)
+                refreshColors()
+            }
         }
-    }
 
-    Text {
-        id: hbClr
-        anchors.top: prClr.top
-        anchors.left: diClr.right
-        text: ""
-        color: Theme.highlightBackgroundColor
-        onColorChanged:{
-            //console.log("=== hbClr === " + color + ", " + Theme.highlightBackgroundColor)
-            refreshColors()
+        Text {
+            id: diClr
+            anchors.top: prClr.top
+            anchors.left: shClr.right
+            text: ""
+            color: Theme.highlightDimmerColor
+            onColorChanged:{
+                //console.log("=== diClr === " + color + ", " + Theme.highlightDimmerColor)
+                refreshColors()
+            }
         }
-    }
 
-    Text {
-        id: dpClr
-        anchors.top: prClr.top
-        anchors.left: hbClr.right
-        text: ""
-        color: Theme.darkPrimaryColor
-        onColorChanged:{
-            //console.log("=== dpClr === " + color + ", " + Theme.darkPrimaryColor)
-            refreshColors()
+        Text {
+            id: hbClr
+            anchors.top: prClr.top
+            anchors.left: diClr.right
+            text: ""
+            color: Theme.highlightBackgroundColor
+            onColorChanged:{
+                //console.log("=== hbClr === " + color + ", " + Theme.highlightBackgroundColor)
+                refreshColors()
+            }
         }
-    }
 
-    Text {
-        id: dsClr
-        anchors.top: prClr.top
-        anchors.left: dpClr.right
-        text: ""
-        color: Theme.darkSecondaryColor
-        onColorChanged:{
-            //console.log("=== dsClr === " + color + ", " + Theme.darkSecondaryColor)
-            refreshColors()
+        Text {
+            id: dpClr
+            anchors.top: prClr.top
+            anchors.left: hbClr.right
+            text: ""
+            color: Theme.darkPrimaryColor
+            onColorChanged:{
+                //console.log("=== dpClr === " + color + ", " + Theme.darkPrimaryColor)
+                refreshColors()
+            }
         }
-    }
 
-    Text {
-        id: lpClr
-        anchors.top: hbClr.top
-        anchors.left: dsClr.right
-        text: ""
-        color: Theme.lightPrimaryColor
-        onColorChanged:{
-            //console.log("=== lpClr === " + color + ", " + Theme.lightPrimaryColor)
-            refreshColors()
+        Text {
+            id: dsClr
+            anchors.top: prClr.top
+            anchors.left: dpClr.right
+            text: ""
+            color: Theme.darkSecondaryColor
+            onColorChanged:{
+                //console.log("=== dsClr === " + color + ", " + Theme.darkSecondaryColor)
+                refreshColors()
+            }
         }
-    }
 
-    Text {
-        id: lsClr
-        anchors.top: hbClr.top
-        anchors.left: lpClr.right
-        text: ""
-        color: Theme.lightSecondaryColor
-        onColorChanged:{
-            //console.log("=== lsClr === " + color + ", " + Theme.lightSecondaryColor)
-            refreshColors()
+        Text {
+            id: lpClr
+            anchors.top: hbClr.top
+            anchors.left: dsClr.right
+            text: ""
+            color: Theme.lightPrimaryColor
+            onColorChanged:{
+                //console.log("=== lpClr === " + color + ", " + Theme.lightPrimaryColor)
+                refreshColors()
+            }
         }
+
+        Text {
+            id: lsClr
+            anchors.top: hbClr.top
+            anchors.left: lpClr.right
+            text: ""
+            color: Theme.lightSecondaryColor
+            onColorChanged:{
+                //console.log("=== lsClr === " + color + ", " + Theme.lightSecondaryColor)
+                refreshColors()
+            }
+        }
+
     }
 
     ScreenBlank { //prevents screen from locking and turning off
         id: unblankScreen
-        enabled: clockCounter.running
+        enabled: clockCounter1.running || clockCounter2.running
     }
 
     Audio {
