@@ -9,30 +9,22 @@
     </message>
 </context>
 <context>
-    <name>Clocks</name>
+    <name>ClockView</name>
     <message>
-        <source>total time</source>
-        <translation>kokonaisaika</translation>
-    </message>
-    <message>
-        <source>moves</source>
-        <translation>siirtoa</translation>
-    </message>
-    <message>
-        <source>adding %1 s per move</source>
-        <translation>lisäaika %1 s siirtoa kohti</translation>
+        <source>increment</source>
+        <translation>lisäys</translation>
     </message>
     <message>
         <source>delay</source>
         <translation>viive</translation>
     </message>
     <message>
-        <source>after main time</source>
-        <translation>peliajan jälkeen</translation>
+        <source>total time %1, %2 moves</source>
+        <translation>kokonaisaika %1, siirtoja %2</translation>
     </message>
     <message>
-        <source>after main time %1 moves in %2 s</source>
-        <translation>peliajan jälkeen %2 s %1 siirtoon</translation>
+        <source>total time</source>
+        <translation>kokonaisaika</translation>
     </message>
 </context>
 <context>
@@ -145,11 +137,11 @@
     </message>
     <message>
         <source>%1 time periods</source>
-        <translation>%1 lisäjaksoa</translation>
+        <translation>lisäjaksoja %1</translation>
     </message>
     <message>
         <source>%1 moves in a period</source>
-        <translation>%1 siirtoa lisäjaksossa</translation>
+        <translation>lisäjaksossa siirtoja %1</translation>
     </message>
     <message>
         <source>time periods</source>

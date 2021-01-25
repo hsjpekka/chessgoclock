@@ -12,21 +12,27 @@
 # The name of your application
 TARGET = harbour-chessgoclock
 
-CONFIG += sailfishapp
-
-SOURCES += src/harbour-chessgoclock.cpp
-
 QT += dbus
 
-OTHER_FILES += qml/harbour-chessgoclock.qml \
+DISTFILES += qml/harbour-chessgoclock.qml \
     qml/cover/CoverPage.qml \
+    qml/pages/Clocks.qml \
+    qml/pages/ColorGrid.qml \
+    qml/pages/ColorSelection.qml \
+    qml/pages/deleteSettings.qml \
+    qml/pages/info.qml \
+    qml/pages/saveSettings.qml \
+    qml/pages/TimeSettings.qml \
     rpm/harbour-chessgoclock.changes.in \
+    rpm/harbour-chessgoclock.changes.run.in \
     rpm/harbour-chessgoclock.spec \
     rpm/harbour-chessgoclock.yaml \
     translations/*.ts \
     harbour-chessgoclock.desktop
 
 SAILFISHAPP_ICONS = 86x86 108x108 128x128 256x256
+
+CONFIG += sailfishapp_qml
 
 # to disable building translations every time, comment out the
 # following CONFIG line
@@ -37,10 +43,3 @@ CONFIG += sailfishapp_i18n
 # following TRANSLATIONS line. And also do not forget to
 # modify the localized app name in the the .desktop file.
 TRANSLATIONS += translations/harbour-chessgoclock-fi.ts
-
-DISTFILES += \
-    qml/pages/Clocks.qml \
-    qml/pages/TimeSettings.qml \
-    qml/utils/ScreenBlank.qml \
-    qml/pages/ColorSelection.qml
-

@@ -68,7 +68,7 @@ Dialog {
     property alias secsPlayer1: secs1.value
     property alias secsPlayer2: secs2.value
     property string txtPlaceHolder: ""
-    property int sliderWidth: page.width*0.8
+    property int sliderWidth: page.width*0.95
     property string soundFile: ambientPath + "positive_confirmation.wav" // ringtonesPath + "jolla-calendar-alarm.ogg"
     property color transparent: "transparent"
     property bool useSounds: false
@@ -546,7 +546,7 @@ Dialog {
 
             Slider {
                 id: hours1
-                width: sliderWidth
+                width: parent.width //sliderWidth
                 //value: hoursPlayer1
                 minimumValue: 0
                 maximumValue: 24
@@ -556,7 +556,7 @@ Dialog {
 
             Slider {
                 id: mins1
-                width: sliderWidth
+                width: parent.width //sliderWidth
                 //value: minsPlayer1
                 minimumValue: 0
                 maximumValue: 60
@@ -566,7 +566,7 @@ Dialog {
 
             Slider {
                 id: secs1
-                width: sliderWidth
+                width: parent.width
                 //value: secsPlayer1
                 minimumValue: 0
                 maximumValue: 60
@@ -584,6 +584,9 @@ Dialog {
                 inputMethodHints: Qt.ImhDigitsOnly
                 x: Theme.paddingLarge
                 visible: bonusVisible
+                EnterKey.onClicked: {
+                    focus = false
+                }
                 onTextChanged: {
                     bonusT1 = text*1.0
                 }
