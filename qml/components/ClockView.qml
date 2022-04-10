@@ -71,8 +71,9 @@ Item {
             inTurn = false;
             stop(ms);
             checkBonus(!atStart);
-            writeBonusTimes();
+            writeBonusTimes();            
             moves++;
+            writeClock();
         } else {
             checkBonus(atStart);
             start(ms);
@@ -146,7 +147,8 @@ Item {
             _bonusTimeLeft = 0
         else
             _bonusTimeLeft = bonusTime;
-        _bonusCount = bonusPeriods;
+        if (timeSystem > 2.5)
+            _bonusCount = bonusPeriods;
 
         writeBonusTimes();
         writeClock();
@@ -231,7 +233,7 @@ Item {
     function writeBonusTimes() {
         var txt = "";
 
-        if (timeSystem === 1) {
+        if (timeSystem === 0) {
             txt = qsTr("total time")
         } else if (timeSystem === 1) {
             txt = qsTr("increment") + " " + (bonusTime/1000).toFixed(0) + " s ";

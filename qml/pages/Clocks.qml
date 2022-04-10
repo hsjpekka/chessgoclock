@@ -58,6 +58,47 @@ Page {
     property bool   tapToReset: false
     readonly property bool gameOn: player1.running || player2.running
 
+    function changeToPlayer(next) {
+        var current, now, opponent;
+        now = new Date().getTime();
+
+        if (next === 2) {
+            current = player1;
+            opponent = player2;
+        } else {
+            current = player2;
+            opponent = player1;
+        }
+        if (gameOn) {
+            if (current.inTurn){
+                current.changePlayer(now);
+                if (!gameOver)
+                    opponent.changePlayer(now);
+            }
+        } else {
+            if (!gameOverTimer.running && !current.inTurn) { // continue after a pause
+                opponent.start(now);
+            }
+        }
+
+        if (clangAtEnd && gameOverTimer.running)
+            alarm.stop();
+
+        return;
+    }
+
+    function outOfTime() {
+        gameOver = true;
+        player1.enabled = false;
+        player2.enabled = false;
+        player1.timeEnded = true;
+        player2.timeEnded = true;
+        gameOverTimer.start();
+        if (clangAtEnd)
+            alarm.play();
+        return;
+    }
+
     function openSettingsDialog() {
         var hours1, minutes1, seconds1, hours2, minutes2, seconds2;
         var sec = 1000, min = 60*sec, h = 60*min;
@@ -219,8 +260,9 @@ Page {
         running: false
         repeat: false
         onTriggered: {
+            tapToReset = true
             player1.enabled = true
-            player2.enabled = true
+            player2.enabled = true            
         }
     }
 
@@ -279,6 +321,11 @@ Page {
         onClicked: {
             if (tapToReset)
                 resetBoard()
+            else
+                changeToPlayer(2);
+            /*
+            if (tapToReset)
+                resetBoard()
             else {
                 var now = new Date().getTime()
                 if (gameOn) {
@@ -296,9 +343,12 @@ Page {
 
             if (clangAtEnd && gameOverTimer.running)
                 alarm.stop()
+            // */
         }
 
         onLost: {
+            outOfTime();
+            /*
             gameOver = true
             player1.enabled = false
             player2.enabled = false
@@ -307,6 +357,7 @@ Page {
             gameOverTimer.start()
             if (clangAtEnd)
                 alarm.play()
+            // */
         }
     }
 
@@ -445,7 +496,10 @@ Page {
 
         onClicked: {
             if (tapToReset)
-                resetBoard()
+                resetBoard()            
+            else
+                changeToPlayer(1);
+            /*
             else {
                 var now = new Date().getTime()
                 if (gameOn) {
@@ -463,15 +517,21 @@ Page {
 
             if (clangAtEnd && gameOverTimer.running)
                 alarm.stop()
+            // */
         }
 
         onLost: {
+            outOfTime();
+            /*
             gameOver = true
             player2.enabled = false
             player1.enabled = false
+            player1.timeEnded = true
+            player2.timeEnded = true
             gameOverTimer.start()
             if (clangAtEnd)
                 alarm.play()
+            // */
         }
     }
 
