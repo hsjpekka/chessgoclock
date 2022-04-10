@@ -52,206 +52,21 @@ Page {
     property color  colorActiveFont: Theme.highlightColor
     property color  colorPassiveArea: "transparent"
     property color  colorPassiveFont: Theme.secondaryHighlightColor
+    property bool   gameOn: player1.running || player2.running
     property int    gameOverWaitTime: 5*1000
     property bool   gameOver: false
     property string gameSetupName: ""
+    property string stateWhenLandscape: stateHorizontal
+    property string stateWhenPortrait: stateVertical
     property bool   tapToReset: false
-    readonly property bool gameOn: player1.running || player2.running
 
-    function changeToPlayer(next) {
-        var current, now, opponent;
-        now = new Date().getTime();
+    readonly property var orientationsAllowed: defaultAllowedOrientations
+    readonly property string stateHorizontal: "horizontal"
+    readonly property string stateVertical: "vertical"
 
-        if (next === 2) {
-            current = player1;
-            opponent = player2;
-        } else {
-            current = player2;
-            opponent = player1;
-        }
-        if (gameOn) {
-            if (current.inTurn){
-                current.changePlayer(now);
-                if (!gameOver)
-                    opponent.changePlayer(now);
-            }
-        } else {
-            if (!gameOverTimer.running && !current.inTurn) { // continue after a pause
-                opponent.start(now);
-            }
-        }
-
-        if (clangAtEnd && gameOverTimer.running)
-            alarm.stop();
-
-        return;
-    }
-
-    function outOfTime() {
-        gameOver = true;
-        player1.enabled = false;
-        player2.enabled = false;
-        player1.timeEnded = true;
-        player2.timeEnded = true;
-        gameOverTimer.start();
-        if (clangAtEnd)
-            alarm.play();
-        return;
-    }
-
-    function openSettingsDialog() {
-        var hours1, minutes1, seconds1, hours2, minutes2, seconds2;
-        var sec = 1000, min = 60*sec, h = 60*min;
-
-        hours1 = Math.floor(player1.timeMax/h);
-        minutes1 = Math.floor((player1.timeMax-hours1*h)/min);
-        seconds1 = Math.floor((player1.timeMax-hours1*h-minutes1*min)/sec);
-
-        hours2 = Math.floor(player2.timeMax/h);
-        minutes2 = Math.floor((player2.timeMax-hours2*h)/min);
-        seconds2 = Math.floor((player2.timeMax-hours2*h-minutes2*min)/sec);
-
-        var dialog = pageStack.push(Qt.resolvedUrl("TimeSettings.qml"), {
-                                    "hoursPlayer1": hours1, "minsPlayer1": minutes1,
-                                    "secsPlayer1": seconds1, "bonusT1": player1.bonusTime/1000,
-                                    "bonusPeriods1": player1.bonusPeriods,
-                                    "hoursPlayer2": hours2, "minsPlayer2": minutes2,
-                                    "secsPlayer2": seconds2, "bonusT2": player2.bonusTime/1000,
-                                    "bonusPeriods2": player1.bonusPeriods,
-                                    "timeSystem": player1.timeSystem, "useSounds": clangAtEnd,
-                                    "soundFile": alarmFile,
-                                    "activeTextColor": colorActiveFont,
-                                    "activeBgColor": colorActiveArea,
-                                    "passiveTextColor": colorPassiveFont,
-                                    "passiveBgColor": colorPassiveArea,
-                                    "layoutName": boardLayoutName,
-                                    "gameSetupName": gameSetupName
-                     });
-
-        dialog.accepted.connect(function() {
-            var sec = 1000;
-            gameSetupName = dialog.gameSetupName;
-
-            player1.timeSystem = dialog.timeSystem;
-            hours1 = dialog.hoursPlayer1;
-            minutes1 = dialog.minsPlayer1;
-            seconds1 = dialog.secsPlayer1;
-            player1.timeMax = ((hours1*60 + minutes1)*60 + seconds1)*sec;
-            player1.bonusTime = dialog.bonusT1*sec;
-            player1.bonusPeriods = dialog.bonusPeriods1;
-
-            player2.timeSystem = dialog.timeSystem;
-            hours2 = dialog.hoursPlayer2;
-            minutes2 = dialog.minsPlayer2;
-            seconds2 = dialog.secsPlayer2;
-            player2.timeMax = ((hours2*60 + minutes2)*60 + seconds2)*sec;
-            player2.bonusTime = dialog.bonusT2*sec;
-            player2.bonusPeriods = dialog.bonusPeriods2;
-
-            boardLayoutName = dialog.layoutName;
-            clangAtEnd = dialog.useSounds;
-            alarmFile = dialog.soundFile;
-
-            setColors(dialog.activeBgColor, dialog.activeTextColor, dialog.passiveBgColor, dialog.passiveTextColor);
-
-            resetBoard();
-
-            return;
-        });
-
-        return;
-    }
-
-    function readBoardSettings(setupNr) {
-        var dum;
-        DataB.createTable(DataB.layoutDb);
-
-        if (DataB.readTable(DataB.layoutDb) === 0) {
-            console.log("layoutDb 0 rows");
-            DataB.newLayoutSet(0, DataB.lastUsed, colorActiveFont, colorActiveArea,
-                             colorPassiveFont, colorPassiveArea, alarmFile, clangAtEnd);
-        } else {
-            dum = DataB.readValue(DataB.layoutDb, setupNr, DataB.keyActiveBg);
-            clrStrAArea = dum;
-            colorActiveArea = Scripts.strToAmbienceColor(dum);
-            dum = DataB.readValue(DataB.layoutDb, setupNr, DataB.keyActiveFont);
-            clrStrATxt = dum;
-            colorActiveFont = Scripts.strToAmbienceColor(dum);
-            dum = DataB.readValue(DataB.layoutDb, setupNr, DataB.keyPassiveBg);
-            clrStrPArea = dum;
-            colorPassiveArea = Scripts.strToAmbienceColor(dum);
-            dum = DataB.readValue(DataB.layoutDb, setupNr, DataB.keyPassiveFont);
-            clrStrPTxt = dum;
-            colorPassiveFont = Scripts.strToAmbienceColor(dum);
-            alarmFile = DataB.readValue(DataB.layoutDb, setupNr, DataB.keySound);
-            clangAtEnd = DataB.readValue(DataB.layoutDb, setupNr, DataB.keyUseSound);
-        }
-
-        return
-    }
-
-    function readClockSettings(setupNr) {
-        var second = 1000;
-        DataB.createTable(DataB.gameDb);
-        if (DataB.readTable(DataB.gameDb) === 0) {
-            // alusta taulukko
-            console.log("gameDb 0 rows");
-            DataB.newGameSet(0, DataB.lastUsed, player1.timeSystem,
-                             player1.timeMax, player1.bonusTime, player1.bonusPeriods,
-                             player2.timeMax, player2.bonusTime, player2.bonusPeriods);
-        } else {
-            player1.timeMax = DataB.readValue(DataB.gameDb, setupNr, DataB.keyPl1Time)*second;
-            player2.timeMax = DataB.readValue(DataB.gameDb, setupNr, DataB.keyPl2Time)*second;
-            player1.timeSystem = DataB.readValue(DataB.gameDb, setupNr, DataB.keyGame);
-            player2.timeSystem = player1.timeSystem;
-            if (player1.timeSystem > 0.5) {
-                player1.bonusTime = DataB.readValue(DataB.gameDb, setupNr, DataB.keyPl1Extra)*second;
-                player2.bonusTime = DataB.readValue(DataB.gameDb, setupNr, DataB.keyPl2Extra)*second;
-                player1.bonusPeriods = DataB.readValue(DataB.gameDb, setupNr, DataB.keyPl1Nbr);
-                player2.bonusPeriods = DataB.readValue(DataB.gameDb, setupNr, DataB.keyPl2Nbr);
-            }
-        }
-
-        return
-    }
-
-    function readDb() {
-        DataB.openDb(LocalStorage);
-
-        readBoardSettings(0);
-        readClockSettings(0);
-
-        return;
-    }
-
-    function refreshColors() {
-        colorActiveArea = Scripts.strToAmbienceColor(clrStrAArea);
-        colorActiveFont = Scripts.strToAmbienceColor(clrStrATxt);
-        colorPassiveArea = Scripts.strToAmbienceColor(clrStrPArea);
-        colorPassiveFont = Scripts.strToAmbienceColor(clrStrPTxt);
-        return;
-    }
-
-    function setColors(actBg, actTxt, pasBg, pasTxt) {
-        colorActiveFont = actTxt;
-        colorActiveArea = actBg;
-        colorPassiveFont = pasTxt;
-        colorPassiveArea = pasBg;
-
-        clrStrAArea = Scripts.colorToAmbienceStr(actBg);
-        clrStrATxt = Scripts.colorToAmbienceStr(actTxt);
-        clrStrPArea = Scripts.colorToAmbienceStr(pasBg);
-        clrStrPTxt = Scripts.colorToAmbienceStr(pasTxt);
-        return;
-    }
-
-    function resetBoard() {
-        alarm.stop();
-        tapToReset = false;
-        gameOver = false;
-        player1.setUp();
-        player2.setUp();
-        return;
+    Component.onCompleted: {
+        readDb()
+        resetBoard()
     }
 
     Timer {
@@ -277,10 +92,10 @@ Page {
         txtInTurn: colorActiveFont
         txtOutTurn: colorPassiveFont
 
-        state: isPortrait ? "vertical" : "horizontal"
+        state: isPortrait ? stateWhenPortrait : stateWhenLandscape
         states: [
             State {
-                name: "horizontal"
+                name: stateHorizontal
 
                 AnchorChanges {
                     target: player1
@@ -294,12 +109,12 @@ Page {
 
                 PropertyChanges {
                     target: player1
-                    rotation: -90
+                    rotation: 0
                 }
             },
 
             State {
-                name: "vertical"
+                name: stateVertical
 
                 AnchorChanges {
                     target: player1
@@ -319,10 +134,14 @@ Page {
         ]
 
         onClicked: {
-            if (tapToReset)
+            if (tapToReset) {
                 resetBoard()
-            else
-                changeToPlayer(2);
+            } else {
+                if (player1.totalTime === 0 && player2.totalTime === 0) { // don't rotate the clock during game
+                    fixClockOrientation(true);
+                }
+                changeToPlayer(2)
+            }
             /*
             if (tapToReset)
                 resetBoard()
@@ -453,10 +272,12 @@ Page {
         txtInTurn: colorActiveFont
         txtOutTurn: colorPassiveFont
 
-        state: isPortrait ? "vertical" : "horizontal"
+        state: isPortrait ? stateWhenPortrait : stateWhenLandscape
+        //state:  ? "vertical" : "horizontal"
         states: [
             State {
-                name: "horizontal"
+                name: stateHorizontal
+                //name: "horizontal"
 
                 AnchorChanges {
                     target: player2
@@ -470,12 +291,13 @@ Page {
 
                 PropertyChanges {
                     target: player2
-                    rotation: -90
+                    rotation: 0
                 }
             },
 
             State {
-                name: "vertical"
+                name: stateVertical
+                //name: "vertical"
 
                 AnchorChanges {
                     target: player2
@@ -495,10 +317,14 @@ Page {
         ]
 
         onClicked: {
-            if (tapToReset)
+            if (tapToReset) {
                 resetBoard()            
-            else
+            } else {
+                if (player1.totalTime === 0 && player2.totalTime === 0) { // don't rotate the clock during game
+                    fixClockOrientation(true);
+                }
                 changeToPlayer(1);
+            }
             /*
             else {
                 var now = new Date().getTime()
@@ -673,8 +499,221 @@ Page {
         source: alarmFile
     }
 
-    Component.onCompleted: {
-        readDb()
-        resetBoard()
+    function changeToPlayer(next) {
+        var current, now, opponent;
+        now = new Date().getTime();
+
+        if (next === 2) {
+            current = player1;
+            opponent = player2;
+        } else {
+            current = player2;
+            opponent = player1;
+        }
+        if (gameOn) {
+            if (current.inTurn){
+                current.changePlayer(now);
+                if (!gameOver)
+                    opponent.changePlayer(now);
+            }
+        } else {
+            if (!gameOverTimer.running && !current.inTurn) { // continue after a pause
+                opponent.start(now);
+            }
+        }
+
+        if (clangAtEnd && gameOverTimer.running)
+            alarm.stop();
+
+        return;
+    }
+
+    function fixClockOrientation(fixOrientation) {
+        if (fixOrientation) {
+            page.allowedOrientations = page.orientation
+            /*
+            if (page.orientation === Orientation.PortraitMask) {
+                stateWhenLandscape = stateVertical;
+                stateWhenPortrait = stateVertical;
+            } else {
+                stateWhenLandscape = stateHorizontal;
+                stateWhenPortrait = stateHorizontal;
+            } // */
+        } else {
+            page.allowedOrientations = page.orientationsAllowed
+            /*
+            stateWhenLandscape = stateHorizontal;
+            stateWhenPortrait = stateVertical;
+            // */
+        } // */
+        return;
+    }
+
+    function outOfTime() {
+        gameOver = true;
+        player1.enabled = false;
+        player2.enabled = false;
+        player1.timeEnded = true;
+        player2.timeEnded = true;
+        gameOverTimer.start();
+        if (clangAtEnd)
+            alarm.play();
+        return;
+    }
+
+    function openSettingsDialog() {
+        var hours1, minutes1, seconds1, hours2, minutes2, seconds2;
+        var sec = 1000, min = 60*sec, h = 60*min;
+
+        hours1 = Math.floor(player1.timeMax/h);
+        minutes1 = Math.floor((player1.timeMax-hours1*h)/min);
+        seconds1 = Math.floor((player1.timeMax-hours1*h-minutes1*min)/sec);
+
+        hours2 = Math.floor(player2.timeMax/h);
+        minutes2 = Math.floor((player2.timeMax-hours2*h)/min);
+        seconds2 = Math.floor((player2.timeMax-hours2*h-minutes2*min)/sec);
+
+        var dialog = pageStack.push(Qt.resolvedUrl("TimeSettings.qml"), {
+                                    "hoursPlayer1": hours1, "minsPlayer1": minutes1,
+                                    "secsPlayer1": seconds1, "bonusT1": player1.bonusTime/1000,
+                                    "bonusPeriods1": player1.bonusPeriods,
+                                    "hoursPlayer2": hours2, "minsPlayer2": minutes2,
+                                    "secsPlayer2": seconds2, "bonusT2": player2.bonusTime/1000,
+                                    "bonusPeriods2": player1.bonusPeriods,
+                                    "timeSystem": player1.timeSystem, "useSounds": clangAtEnd,
+                                    "soundFile": alarmFile,
+                                    "activeTextColor": colorActiveFont,
+                                    "activeBgColor": colorActiveArea,
+                                    "passiveTextColor": colorPassiveFont,
+                                    "passiveBgColor": colorPassiveArea,
+                                    "layoutName": boardLayoutName,
+                                    "gameSetupName": gameSetupName
+                     });
+
+        dialog.accepted.connect(function() {
+            var sec = 1000;
+            gameSetupName = dialog.gameSetupName;
+
+            player1.timeSystem = dialog.timeSystem;
+            hours1 = dialog.hoursPlayer1;
+            minutes1 = dialog.minsPlayer1;
+            seconds1 = dialog.secsPlayer1;
+            player1.timeMax = ((hours1*60 + minutes1)*60 + seconds1)*sec;
+            player1.bonusTime = dialog.bonusT1*sec;
+            player1.bonusPeriods = dialog.bonusPeriods1;
+
+            player2.timeSystem = dialog.timeSystem;
+            hours2 = dialog.hoursPlayer2;
+            minutes2 = dialog.minsPlayer2;
+            seconds2 = dialog.secsPlayer2;
+            player2.timeMax = ((hours2*60 + minutes2)*60 + seconds2)*sec;
+            player2.bonusTime = dialog.bonusT2*sec;
+            player2.bonusPeriods = dialog.bonusPeriods2;
+
+            boardLayoutName = dialog.layoutName;
+            clangAtEnd = dialog.useSounds;
+            alarmFile = dialog.soundFile;
+
+            setColors(dialog.activeBgColor, dialog.activeTextColor, dialog.passiveBgColor, dialog.passiveTextColor);
+
+            resetBoard();
+
+            return;
+        });
+
+        return;
+    }
+
+    function readBoardSettings(setupNr) {
+        var dum;
+        DataB.createTable(DataB.layoutDb);
+
+        if (DataB.readTable(DataB.layoutDb) === 0) {
+            console.log("layoutDb 0 rows");
+            DataB.newLayoutSet(0, DataB.lastUsed, colorActiveFont, colorActiveArea,
+                             colorPassiveFont, colorPassiveArea, alarmFile, clangAtEnd);
+        } else {
+            dum = DataB.readValue(DataB.layoutDb, setupNr, DataB.keyActiveBg);
+            clrStrAArea = dum;
+            colorActiveArea = Scripts.strToAmbienceColor(dum);
+            dum = DataB.readValue(DataB.layoutDb, setupNr, DataB.keyActiveFont);
+            clrStrATxt = dum;
+            colorActiveFont = Scripts.strToAmbienceColor(dum);
+            dum = DataB.readValue(DataB.layoutDb, setupNr, DataB.keyPassiveBg);
+            clrStrPArea = dum;
+            colorPassiveArea = Scripts.strToAmbienceColor(dum);
+            dum = DataB.readValue(DataB.layoutDb, setupNr, DataB.keyPassiveFont);
+            clrStrPTxt = dum;
+            colorPassiveFont = Scripts.strToAmbienceColor(dum);
+            alarmFile = DataB.readValue(DataB.layoutDb, setupNr, DataB.keySound);
+            clangAtEnd = DataB.readValue(DataB.layoutDb, setupNr, DataB.keyUseSound);
+        }
+
+        return
+    }
+
+    function readClockSettings(setupNr) {
+        var second = 1000;
+        DataB.createTable(DataB.gameDb);
+        if (DataB.readTable(DataB.gameDb) === 0) {
+            // alusta taulukko
+            console.log("gameDb 0 rows");
+            DataB.newGameSet(0, DataB.lastUsed, player1.timeSystem,
+                             player1.timeMax, player1.bonusTime, player1.bonusPeriods,
+                             player2.timeMax, player2.bonusTime, player2.bonusPeriods);
+        } else {
+            player1.timeMax = DataB.readValue(DataB.gameDb, setupNr, DataB.keyPl1Time)*second;
+            player2.timeMax = DataB.readValue(DataB.gameDb, setupNr, DataB.keyPl2Time)*second;
+            player1.timeSystem = DataB.readValue(DataB.gameDb, setupNr, DataB.keyGame);
+            player2.timeSystem = player1.timeSystem;
+            if (player1.timeSystem > 0.5) {
+                player1.bonusTime = DataB.readValue(DataB.gameDb, setupNr, DataB.keyPl1Extra)*second;
+                player2.bonusTime = DataB.readValue(DataB.gameDb, setupNr, DataB.keyPl2Extra)*second;
+                player1.bonusPeriods = DataB.readValue(DataB.gameDb, setupNr, DataB.keyPl1Nbr);
+                player2.bonusPeriods = DataB.readValue(DataB.gameDb, setupNr, DataB.keyPl2Nbr);
+            }
+        }
+
+        return
+    }
+
+    function readDb() {
+        DataB.openDb(LocalStorage);
+
+        readBoardSettings(0);
+        readClockSettings(0);
+
+        return;
+    }
+
+    function refreshColors() {
+        colorActiveArea = Scripts.strToAmbienceColor(clrStrAArea);
+        colorActiveFont = Scripts.strToAmbienceColor(clrStrATxt);
+        colorPassiveArea = Scripts.strToAmbienceColor(clrStrPArea);
+        colorPassiveFont = Scripts.strToAmbienceColor(clrStrPTxt);
+        return;
+    }
+
+    function resetBoard() {
+        alarm.stop();
+        tapToReset = false;
+        gameOver = false;
+        player1.setUp();
+        player2.setUp();
+        fixClockOrientation(false);
+        return;
+    }
+
+    function setColors(actBg, actTxt, pasBg, pasTxt) {
+        colorActiveFont = actTxt;
+        colorActiveArea = actBg;
+        colorPassiveFont = pasTxt;
+        colorPassiveArea = pasBg;
+
+        clrStrAArea = Scripts.colorToAmbienceStr(actBg);
+        clrStrATxt = Scripts.colorToAmbienceStr(actTxt);
+        clrStrPArea = Scripts.colorToAmbienceStr(pasBg);
+        clrStrPTxt = Scripts.colorToAmbienceStr(pasTxt);
+        return;
     }
 }

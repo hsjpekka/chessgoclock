@@ -6,3 +6,7 @@ Exec=sailfish-qml harbour-chessgoclock
 Name=Chess & Go Clock
 Name[fi]=Shakki- ja Go-kello
 
+[X-Sailjail]
+Permissions=Audio
+OrganizationName=null.hsjpekka
+ApplicationName=harbour-chessgoclock
