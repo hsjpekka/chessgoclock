@@ -66,7 +66,7 @@ Page {
 
     Component.onCompleted: {
         readDb()
-        resetBoard()
+        setupBoard()
     }
 
     Timer {
@@ -135,7 +135,7 @@ Page {
 
         onClicked: {
             if (tapToReset) {
-                resetBoard()
+                setupBoard()
             } else {
                 if (player1.totalTime === 0 && player2.totalTime === 0) { // don't rotate the clock during game
                     fixClockOrientation(true);
@@ -210,8 +210,9 @@ Page {
             icon.height: (gameOn || (player1.totalTime === 0 && player2.totalTime === 0))? Theme.iconSizeLarge : Theme.iconSizeExtraLarge
             icon.width: icon.height
             onClicked: {
-                if (!gameOn)
+                if (!gameOn) {
                     resetBoard()
+                }
             }
 
             onPressAndHold: {
@@ -219,6 +220,17 @@ Page {
             }
 
             enabled: !player1.running && !player2.running
+
+            function resetBoard() {
+                player1.enabled = false;
+                player2.enabled = false;
+                remorse.execute(qsTr("Resetting the clocks"), function () {
+                    setupBoard();
+                    player1.enabled = true;
+                    player2.enabled = true;
+                });
+                return;
+            }
         }
 
         IconButton {
@@ -318,7 +330,7 @@ Page {
 
         onClicked: {
             if (tapToReset) {
-                resetBoard()            
+                setupBoard()
             } else {
                 if (player1.totalTime === 0 && player2.totalTime === 0) { // don't rotate the clock during game
                     fixClockOrientation(true);
@@ -499,6 +511,14 @@ Page {
         source: alarmFile
     }
 
+    RemorsePopup {
+        id: remorse
+        onCanceled: {
+            player1.enabled = true;
+            player2.enabled = true;
+        }
+    }
+
     function changeToPlayer(next) {
         var current, now, opponent;
         now = new Date().getTime();
@@ -616,7 +636,7 @@ Page {
 
             setColors(dialog.activeBgColor, dialog.activeTextColor, dialog.passiveBgColor, dialog.passiveTextColor);
 
-            resetBoard();
+            setupBoard();
 
             return;
         });
@@ -694,16 +714,6 @@ Page {
         return;
     }
 
-    function resetBoard() {
-        alarm.stop();
-        tapToReset = false;
-        gameOver = false;
-        player1.setUp();
-        player2.setUp();
-        fixClockOrientation(false);
-        return;
-    }
-
     function setColors(actBg, actTxt, pasBg, pasTxt) {
         colorActiveFont = actTxt;
         colorActiveArea = actBg;
@@ -714,6 +724,16 @@ Page {
         clrStrATxt = Scripts.colorToAmbienceStr(actTxt);
         clrStrPArea = Scripts.colorToAmbienceStr(pasBg);
         clrStrPTxt = Scripts.colorToAmbienceStr(pasTxt);
+        return;
+    }
+
+    function setupBoard() {
+        alarm.stop();
+        tapToReset = false;
+        gameOver = false;
+        player1.setUp();
+        player2.setUp();
+        fixClockOrientation(false);
         return;
     }
 }

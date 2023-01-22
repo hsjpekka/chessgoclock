@@ -1,8 +1,14 @@
 import QtQuick 2.0
-import org.nemomobile.dbus 2.0
+//import org.nemomobile.dbus 2.0
+import Nemo.KeepAlive 1.2
 
 Item {
     property bool enabled: false
+
+    DisplayBlanking {
+        preventBlanking: parent.enabled
+    }
+    /*
     function request(){
         var method = "req_display"+(enabled?"":"_cancel")+"_blanking_pause";
         console.log('screen blank:', enabled, method);
@@ -38,4 +44,5 @@ Item {
             enabled=false
         }
     }
+    // */
 }

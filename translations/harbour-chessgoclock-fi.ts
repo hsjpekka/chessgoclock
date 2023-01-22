@@ -28,6 +28,13 @@
     </message>
 </context>
 <context>
+    <name>Clocks</name>
+    <message>
+        <source>Resetting the clocks</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ColorSelection</name>
     <message>
         <source>ambience</source>

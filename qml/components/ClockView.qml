@@ -38,6 +38,75 @@ Item {
     signal clicked()
     signal lost()
 
+    Timer {
+        id: timer
+        interval: gameTimeLeft > 1400 ? 250 : (_bonusTimeLeft > 1400 ? 250 : 50)
+        running: false
+        repeat: true
+        onTriggered: {
+            if (inTurn) {
+                updateClock(interval)
+            }
+        }
+    }
+
+    Rectangle {// background
+        anchors.fill: parent
+        color: timeEnded? bgOver : (inTurn? bgInTurn : bgOutTurn)
+    }
+
+    Label {
+        id: statsDisplay
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
+        horizontalAlignment: Text.AlignHCenter
+        width: parent.width
+
+        color: timeDisplay.color
+        visible: (moves > 0)
+
+        text: qsTr("total time %1, %2 moves").arg(timeTxt).arg(moves)
+
+        property string timeTxt: clockText(totalTime)
+    }
+
+    Label {
+        id: timeDisplay
+        anchors.centerIn: parent
+
+        color: timeEnded? txtOver : (inTurn? txtInTurn : txtOutTurn)
+        font.pixelSize: byoyo? Theme.fontSizeHuge*2 : 0.3*parent.height //Theme.fontSizeExtraLarge
+        font.bold: byoyo || (timeSystem < 2.5 && gameTimeLeft < 10*1000 && running) || timeEnded
+        style: timeEnded? Text.Outline : Text.Raised
+
+        text: showPlayer? player : txt
+
+        property string txt: "--:--"
+    }
+
+    Label {
+        id: bonusDisplay
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: clockTile.horizontalCenter
+        horizontalAlignment: Text.AlignHCenter
+        width: parent.width
+
+        color: timeDisplay.color
+        font.bold: byoyo || (timeSystem === 2 && _bonusTimeLeft > 0 && running)
+        font.pixelSize: byoyo? Theme.fontSizeHuge*1.5 : Theme.fontSizeLarge
+        style: byoyo? Text.Raised : Text.Normal
+        wrapMode: Text.Wrap
+
+        text: "" // "extraTime"
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: {
+            clockTile.clicked()
+        }
+    }
+
     function byoyomi() {
         // if the move takes longer than N*bonusTime, N bonus periods are expended
         // called every clock update
@@ -255,74 +324,5 @@ Item {
         timeDisplay.txt = txt;
 
         return txt;
-    }
-
-    Timer {
-        id: timer
-        interval: gameTimeLeft > 1400 ? 250 : (_bonusTimeLeft > 1400 ? 250 : 50)
-        running: false
-        repeat: true
-        onTriggered: {
-            if (inTurn) {
-                updateClock(interval)
-            }
-        }
-    }
-
-    Rectangle {// background
-        anchors.fill: parent
-        color: timeEnded? bgOver : (inTurn? bgInTurn : bgOutTurn)
-    }
-
-    Label {
-        id: statsDisplay
-        anchors.top: parent.top
-        anchors.horizontalCenter: parent.horizontalCenter
-        horizontalAlignment: Text.AlignHCenter
-        width: parent.width
-
-        color: timeDisplay.color
-        visible: (moves > 0)
-
-        text: qsTr("total time %1, %2 moves").arg(timeTxt).arg(moves)
-
-        property string timeTxt: clockText(totalTime)
-    }
-
-    Label {
-        id: timeDisplay
-        anchors.centerIn: parent
-
-        color: timeEnded? txtOver : (inTurn? txtInTurn : txtOutTurn)
-        font.pixelSize: byoyo? Theme.fontSizeHuge*2 : 0.3*parent.height //Theme.fontSizeExtraLarge
-        font.bold: byoyo || (timeSystem < 2.5 && gameTimeLeft < 10*1000 && running) || timeEnded
-        style: timeEnded? Text.Outline : Text.Raised
-
-        text: showPlayer? player : txt
-
-        property string txt: "--:--"
-    }
-
-    Label {
-        id: bonusDisplay
-        anchors.bottom: parent.bottom
-        anchors.horizontalCenter: clockTile.horizontalCenter
-        horizontalAlignment: Text.AlignHCenter
-        width: parent.width
-
-        color: timeDisplay.color
-        font.bold: byoyo || (timeSystem === 2 && _bonusTimeLeft > 0 && running)
-        font.pixelSize: byoyo? Theme.fontSizeHuge*1.5 : Theme.fontSizeLarge
-        style: byoyo? Text.Raised : Text.Normal
-        wrapMode: Text.Wrap
-
-        text: "" // "extraTime"
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        onClicked: {
-            clockTile.clicked()
-        }
     }
 }

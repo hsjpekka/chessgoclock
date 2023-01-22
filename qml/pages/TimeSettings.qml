@@ -419,7 +419,8 @@ Dialog {
             ComboBox {
                 id: cbTimeSetups
                 width: page.width
-                label: (comboGameList.count > 0) ? qsTr("stored games") : qsTr("no stored games")
+                enabled: comboGameList.count > 0
+                label: enabled ? qsTr("stored games") : qsTr("no stored games")
                 menu: ContextMenu {
                     id: timeSetupList
                     Repeater {
@@ -455,7 +456,8 @@ Dialog {
             ComboBox {
                 id: cbStoredLayouts
                 width: page.width
-                label: (comboLayoutList.count > 0)?  qsTr("stored layouts") : qsTr("no stored layouts")
+                enabled: comboLayoutList.count > 0
+                label: enabled?  qsTr("stored layouts") : qsTr("no stored layouts")
 
                 menu: ContextMenu {
                     Repeater {
